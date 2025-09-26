@@ -1,7 +1,6 @@
 import 'package:dynamic_popup/dynamic_popup.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
-import 'package:get/get.dart';
 import 'package:dynamic_popup/src/data/model/popup_config.dart';
 import 'package:dynamic_popup/src/data/model/popup_models.dart';
 import 'package:dynamic_popup/src/parser/markdown_dynamic_parser.dart';
@@ -152,29 +151,32 @@ class _DynamicPopupWidgetState extends State<DynamicPopupWidget>
     
     _animationController.reverse().then((_) {
       if (mounted) {
-        Navigator.of(context).pop();
+        // Call the onDismissed callback, but don't pop the navigator here
+        // The service will handle the dialog dismissal
         widget.onDismissed?.call();
       }
     });
   }
 
   void _showValidationError() {
-    Get.snackbar(
-      'Attention',
-      'Please fill in all required fields to continue',
-      backgroundColor: Colors.orange.shade100,
-      colorText: Colors.orange.shade800,
-      icon: const Icon(Icons.warning, color: Colors.orange),
+    // Using Flutter's ScaffoldMessenger instead of Get.snackbar
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Please fill in all required fields to continue'),
+        backgroundColor: Colors.orange.shade100,
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 
   void _showSubmissionError() {
-    Get.snackbar(
-      'Error',
-      'An error occurred while submitting. Please try again.',
-      backgroundColor: Colors.red.shade100,
-      colorText: Colors.red.shade800,
-      icon: const Icon(Icons.error, color: Colors.red),
+    // Using Flutter's ScaffoldMessenger instead of Get.snackbar
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('An error occurred while submitting. Please try again.'),
+        backgroundColor: Colors.red.shade100,
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 

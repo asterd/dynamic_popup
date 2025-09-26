@@ -1,83 +1,75 @@
 import 'dart:convert';
 import 'package:dynamic_popup/src/data/model/popup_config.dart';
 import 'package:dynamic_popup/src/data/model/popup_models.dart';
-import 'package:get/get.dart';
 
 /// Repository for API calls related to dynamic popups
-/// This is a simplified version that can be extended by the user
-class DynamicPopupRepository {
+/// This is a base class that should be extended by the user with their own implementation
+/// Only checkForPopup and submitPopupResponse are required, other methods are optional
+abstract class DynamicPopupRepository {
   
   /// Check if there are popups to show for a specific screen
-  /// This is a placeholder implementation - users should override this
-  static Future<PopupApiResponse?> checkForPopup({
+  /// This method is REQUIRED and must be implemented by the user
+  Future<PopupApiResponse?> checkForPopup({
     required String screenName,
     String? userId,
-  }) async {
-    // This is a placeholder implementation
-    // In a real app, this would make an HTTP request to your backend
-    return PopupApiResponse(hasPopup: false);
-  }
+  });
 
   /// Submit the user's response to the popup
-  /// This is a placeholder implementation - users should override this
-  static Future<bool> submitPopupResponse({
+  /// This method is REQUIRED and must be implemented by the user
+  Future<bool> submitPopupResponse({
     required PopupResponse popupResponse,
-  }) async {
-    // This is a placeholder implementation
-    // In a real app, this would make an HTTP request to your backend
-    return true;
-  }
+  });
 
   /// Mark a popup as shown (for tracking)
-  /// This is a placeholder implementation - users should override this
-  static Future<bool> markPopupAsShown({
+  /// This method is OPTIONAL - override only if you need this functionality
+  Future<bool> markPopupAsShown({
     required String popupId,
     String? userId,
   }) async {
-    // This is a placeholder implementation
+    // Default implementation does nothing
     return true;
   }
 
   /// Mark a popup as dismissed (closed without completion)
-  /// This is a placeholder implementation - users should override this
-  static Future<bool> markPopupAsDismissed({
+  /// This method is OPTIONAL - override only if you need this functionality
+  Future<bool> markPopupAsDismissed({
     required String popupId,
     String? userId,
   }) async {
-    // This is a placeholder implementation
+    // Default implementation does nothing
     return true;
   }
 
   /// Get all available popups (for testing/admin)
-  /// This is a placeholder implementation - users should override this
-  static Future<List<PopupConfig>?> getAllPopups() async {
-    // This is a placeholder implementation
+  /// This method is OPTIONAL - override only if you need this functionality
+  Future<List<PopupConfig>?> getAllPopups() async {
+    // Default implementation does nothing
     return null;
   }
 
   /// Get a specific popup by ID (for testing)
-  /// This is a placeholder implementation - users should override this
-  static Future<PopupConfig?> getPopupById(String popupId) async {
-    // This is a placeholder implementation
+  /// This method is OPTIONAL - override only if you need this functionality
+  Future<PopupConfig?> getPopupById(String popupId) async {
+    // Default implementation does nothing
     return null;
   }
 
   /// Get the state of all popups for a user
-  /// This is a placeholder implementation - users should override this
-  static Future<List<PopupState>?> getUserPopupStates({
+  /// This method is OPTIONAL - override only if you need this functionality
+  Future<List<PopupState>?> getUserPopupStates({
     String? userId,
   }) async {
-    // This is a placeholder implementation
+    // Default implementation does nothing
     return null;
   }
 
   /// Reset the state of a popup (for testing)
-  /// This is a placeholder implementation - users should override this
-  static Future<bool> resetPopupState({
+  /// This method is OPTIONAL - override only if you need this functionality
+  Future<bool> resetPopupState({
     required String popupId,
     String? userId,
   }) async {
-    // This is a placeholder implementation
+    // Default implementation does nothing
     return true;
   }
 }

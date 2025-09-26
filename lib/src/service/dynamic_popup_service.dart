@@ -1,24 +1,29 @@
 import 'dart:convert';
-import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dynamic_popup/src/data/model/popup_config.dart';
 import 'package:dynamic_popup/src/data/model/popup_models.dart';
 import 'package:dynamic_popup/src/data/repository/dynamic_popup_repository.dart';
 import 'package:dynamic_popup/src/ui/dynamic_popup_widget.dart';
+import 'package:flutter/material.dart';
 
 /// Service for managing dynamic popups
-class DynamicPopupService extends GetxService {
+/// Note: This service needs to be initialized by your app and provided to widgets
+class DynamicPopupService {
   static const String _storageKeyPrefix = 'dynamic_popup_state_';
   
-  final RxBool _isCheckingPopup = false.obs;
+  final DynamicPopupRepository repository;
   final Map<String, PopupState> _popupStates = {};
   final Set<String> _shownInSession = {}; // Only for current session
+  bool _isCheckingPopup = false;
 
-  bool get isCheckingPopup => _isCheckingPopup.value;
+  bool get isCheckingPopup => _isCheckingPopup;
 
-  @override
-  void onInit() {
-    super.onInit();
+  /// Create a new DynamicPopupService with a repository
+  DynamicPopupService({required this.repository});
+
+  /// Initialize the service
+  /// Call this when your app starts
+  void init() {
     _loadLocalPopupStates();
     print('DynamicPopupService initialized - session tracking reset');
   }
@@ -52,18 +57,19 @@ class DynamicPopupService extends GetxService {
     required String screenName,
     String? userId,
     bool force = false,
+    required BuildContext context, // Added context parameter
   }) async {
-    if (_isCheckingPopup.value && !force) {
+    if (_isCheckingPopup && !force) {
       print('Popup check already in progress, skipping');
       return false;
     }
 
-    _isCheckingPopup.value = true;
+    _isCheckingPopup = true;
 
     try {
       print('Checking for popup on screen: $screenName');
       
-      final apiResponse = await DynamicPopupRepository.checkForPopup(
+      final apiResponse = await repository.checkForPopup(
         screenName: screenName,
         userId: userId,
       );
@@ -73,7 +79,10 @@ class DynamicPopupService extends GetxService {
         
         // Check if popup should be shown
         if (_shouldShowPopup(popup)) {
-          return await _showPopup(popup, userId: userId);
+          // Check if the context is still mounted before showing the dialog
+          if (!context.mounted) return false;
+          
+          return await _showPopup(popup, context: context, userId: userId);
         } else {
           print('Popup ${popup.id} already shown or expired, skipping');
         }
@@ -86,7 +95,7 @@ class DynamicPopupService extends GetxService {
       print('Error in checkAndShowPopup: $e');
       return false;
     } finally {
-      _isCheckingPopup.value = false;
+      _isCheckingPopup = false;
     }
   }
 
@@ -134,30 +143,54 @@ class DynamicPopupService extends GetxService {
   }
 
   /// Show a popup
-  Future<bool> _showPopup(PopupConfig popup, {String? userId}) async {
+  Future<bool> _showPopup(PopupConfig popup, {
+    required BuildContext context, // Added context parameter
+    String? userId
+  }) async {
     try {
       print('Showing popup: ${popup.id}');
       
       // Mark as shown in session (only in memory)
       _shownInSession.add(popup.id);
       
-      // Track the view
-      await _trackPopupShown(popup.id, userId: userId);
+      // Track the view (optional)
+      try {
+        await repository.markPopupAsShown(
+          popupId: popup.id,
+          userId: userId,
+        );
+      } catch (e) {
+        print('Error tracking popup shown (optional): $e');
+      }
 
       var wasCompleted = false;
+      var wasDismissed = false;
 
-      await Get.dialog(
-        DynamicPopupWidget(
-          config: popup,
-          onCompleted: (response) {
-            wasCompleted = true;
-            _handlePopupCompleted(response, userId: userId);
-          },
-          onDismissed: () {
-            _handlePopupDismissed(popup.id, userId: userId);
-          },
-        ),
+      // Using Flutter's showDialog instead of Get.dialog
+      await showDialog(
+        context: context,
         barrierDismissible: !popup.isBlocking,
+        builder: (BuildContext context) {
+          return DynamicPopupWidget(
+            config: popup,
+            onCompleted: (response) {
+              wasCompleted = true;
+              _handlePopupCompleted(response, userId: userId);
+              // Check if the context is still mounted before popping
+              if (context.mounted) {
+                Navigator.of(context).pop(); // Close the dialog
+              }
+            },
+            onDismissed: () {
+              wasDismissed = true;
+              _handlePopupDismissed(popup.id, userId: userId);
+              // Check if the context is still mounted before popping
+              if (context.mounted) {
+                Navigator.of(context).pop(); // Close the dialog
+              }
+            },
+          );
+        },
       );
 
       return wasCompleted;
@@ -185,7 +218,7 @@ class DynamicPopupService extends GetxService {
   }
 
   /// Handle popup dismissal
-  void _handlePopupDismissed(String popupId, {String? userId}) {
+  Future<void> _handlePopupDismissed(String popupId, {String? userId}) async {
     print('Popup dismissed: $popupId');
     
     // Update local state
@@ -197,14 +230,21 @@ class DynamicPopupService extends GetxService {
     _popupStates[popupId] = state;
     _savePopupState(state);
 
-    // Track dismissal
-    _trackPopupDismissed(popupId, userId: userId);
+    // Track dismissal (optional)
+    try {
+      await repository.markPopupAsDismissed(
+        popupId: popupId,
+        userId: userId,
+      );
+    } catch (e) {
+      print('Error tracking popup dismissed (optional): $e');
+    }
   }
 
   /// Submit popup response to backend
   Future<void> _submitPopupResponse(PopupResponse response) async {
     try {
-      final success = await DynamicPopupRepository.submitPopupResponse(
+      final success = await repository.submitPopupResponse(
         popupResponse: response,
       );
       
@@ -219,36 +259,18 @@ class DynamicPopupService extends GetxService {
     }
   }
 
-  /// Track popup shown
-  Future<void> _trackPopupShown(String popupId, {String? userId}) async {
-    try {
-      await DynamicPopupRepository.markPopupAsShown(
-        popupId: popupId,
-        userId: userId,
-      );
-    } catch (e) {
-      print('Error tracking popup shown: $e');
-    }
-  }
-
-  /// Track popup dismissed
-  Future<void> _trackPopupDismissed(String popupId, {String? userId}) async {
-    try {
-      await DynamicPopupRepository.markPopupAsDismissed(
-        popupId: popupId,
-        userId: userId,
-      );
-    } catch (e) {
-      print('Error tracking popup dismissed: $e');
-    }
-  }
-
   /// Show popup by ID
-  Future<bool> showPopupById(String popupId, {String? userId}) async {
+  Future<bool> showPopupById(String popupId, {
+    String? userId,
+    required BuildContext context, // Added context parameter
+  }) async {
     try {
-      final popup = await DynamicPopupRepository.getPopupById(popupId);
+      final popup = await repository.getPopupById(popupId);
       if (popup != null) {
-        return await _showPopup(popup, userId: userId);
+        // Check if the context is still mounted before showing the dialog
+        if (!context.mounted) return false;
+        
+        return await _showPopup(popup, context: context, userId: userId);
       }
       return false;
     } catch (e) {
@@ -260,7 +282,7 @@ class DynamicPopupService extends GetxService {
   /// Reset popup state for a specific ID (for testing)
   Future<void> resetPopupState(String popupId) async {
     try {
-      await DynamicPopupRepository.resetPopupState(popupId: popupId);
+      await repository.resetPopupState(popupId: popupId);
       _popupStates.remove(popupId);
       _shownInSession.remove(popupId);
       final prefs = await SharedPreferences.getInstance();

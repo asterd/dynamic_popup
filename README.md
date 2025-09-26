@@ -13,6 +13,8 @@ A flexible and customizable dynamic popup system for Flutter with markdown suppo
 - **Smooth animations** and modern design
 - **Offline support** with local storage
 - **Easy to customize** and extend
+- **No dependency on GetX** - works with any Flutter app
+- **Minimal API requirements** - only two endpoints required
 
 ## 🚀 Installation
 
@@ -88,15 +90,44 @@ flutter pub get
 ```dart
 import 'package:dynamic_popup/dynamic_popup.dart';
 
-// In your app initialization
-final popupService = Get.put(DynamicPopupService());
+// Create a repository that implements your API calls
+class MyPopupRepository extends BaseDynamicPopupRepository {
+  @override
+  Future<PopupApiResponse?> checkForPopup({
+    required String screenName,
+    String? userId,
+  }) async {
+    // Implement your API call here
+    // Only these two methods are required
+  }
+
+  @override
+  Future<bool> submitPopupResponse({
+    required PopupResponse popupResponse,
+  }) async {
+    // Implement your API call here
+    // Only these two methods are required
+  }
+}
+
+// In your app initialization (e.g., in initState of your main widget)
+final popupService = DynamicPopupService(
+  repository: MyPopupRepository(),
+);
+popupService.init(); // Initialize the service
 ```
 
 ### Show Manual Popup
 
 ```dart
 // Show specific popup by ID
-await popupService.showPopupById('privacy_update_2024');
+await popupService.showPopupById('privacy_update_2024', context: context);
+
+// Check for and show popup for a screen
+await popupService.checkAndShowPopup(
+  screenName: 'home_screen',
+  context: context,
+);
 
 // Reset state for testing
 await popupService.resetPopupState('privacy_update_2024');
@@ -111,7 +142,10 @@ popupService.resetAllPopupStates();
 import 'package:dynamic_popup/dynamic_popup.dart';
 
 // Navigate to test page
-Get.to(() => const DynamicPopupTestPage());
+Navigator.push(
+  context,
+  MaterialPageRoute(builder: (context) => const DynamicPopupTestPage()),
+);
 ```
 
 ### Manual Popup Display
@@ -125,10 +159,105 @@ final config = PopupConfig(
   isBlocking: false,
 );
 
-Get.dialog(DynamicPopupWidget(
-  config: config,
-  onCompleted: (response) => print('Response: ${response.responses}'),
-));
+showDialog(
+  context: context,
+  builder: (BuildContext context) {
+    return DynamicPopupWidget(
+      config: config,
+      onCompleted: (response) => print('Response: ${response.responses}'),
+    );
+  },
+);
+```
+
+## 🔌 Custom API Integration
+
+The package is designed to work with any backend API with minimal requirements. Here's how to integrate with your custom API:
+
+### 1. Minimal Implementation (Only 2 Required Methods)
+
+```dart
+import 'package:dynamic_popup/dynamic_popup.dart';
+
+class MySimplePopupRepository extends BaseDynamicPopupRepository {
+  @override
+  Future<PopupApiResponse?> checkForPopup({
+    required String screenName,
+    String? userId,
+  }) async {
+    // Only implement these two required methods
+    // All other methods are optional
+  }
+
+  @override
+  Future<bool> submitPopupResponse({
+    required PopupResponse popupResponse,
+  }) async {
+    // Only implement these two required methods
+    // All other methods are optional
+  }
+}
+```
+
+### 2. Advanced Implementation (With Optional Methods)
+
+```dart
+class MyAdvancedPopupRepository extends BaseDynamicPopupRepository {
+  @override
+  Future<PopupApiResponse?> checkForPopup({
+    required String screenName,
+    String? userId,
+  }) async {
+    // Required method
+  }
+
+  @override
+  Future<bool> submitPopupResponse({
+    required PopupResponse popupResponse,
+  }) async {
+    // Required method
+  }
+  
+  // Optional methods - implement only what you need
+  @override
+  Future<bool> markPopupAsShown({
+    required String popupId,
+    String? userId,
+  }) async {
+    // Optional tracking
+  }
+  
+  @override
+  Future<bool> markPopupAsDismissed({
+    required String popupId,
+    String? userId,
+  }) async {
+    // Optional tracking
+  }
+}
+```
+
+### 3. Direct Usage Without Service
+
+```dart
+// Fetch popup config from your API directly
+final popupConfig = await MyApiService.getPopupForScreen('home_screen');
+
+if (popupConfig != null) {
+  await showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return DynamicPopupWidget(
+        config: popupConfig,
+        onCompleted: (response) async {
+          // Submit response to your API directly
+          await MyApiService.submitResponse(response);
+          Navigator.of(context).pop();
+        },
+      );
+    },
+  );
+}
 ```
 
 ## 🧪 Testing
@@ -137,7 +266,10 @@ Get.dialog(DynamicPopupWidget(
 Run `DynamicPopupTestPage` to test all components:
 
 ```dart
-Get.to(() => const DynamicPopupTestPage());
+Navigator.push(
+  context,
+  MaterialPageRoute(builder: (context) => const DynamicPopupTestPage()),
+);
 ```
 
 ## 📋 Complete Examples
@@ -189,7 +321,9 @@ lib/
 │   │   │   ├── dynamic_component.dart
 │   │   │   └── popup_models.dart
 │   │   └── repository/
-│   │       └── dynamic_popup_repository.dart
+│   │       ├── dynamic_popup_repository.dart
+│   │       ├── base_dynamic_popup_repository.dart
+│   │       └── default_dynamic_popup_repository.dart
 │   ├── parser/
 │   │   └── markdown_dynamic_parser.dart
 │   ├── service/
@@ -238,7 +372,7 @@ case DynamicComponentType.newType:
 ## 🚨 Troubleshooting
 
 ### Popup doesn't appear
-- Verify service is registered
+- Verify service is initialized
 - Check API logs for errors
 - Verify target screen is correct
 
@@ -261,6 +395,8 @@ case DynamicComponentType.newType:
 - ✅ API repository and service
 - ✅ Controller integration
 - ✅ Testing system
+- ✅ Removed GetX dependency for better compatibility
+- ✅ Simplified API requirements (only 2 endpoints required)
 
 ## 📞 Support
 

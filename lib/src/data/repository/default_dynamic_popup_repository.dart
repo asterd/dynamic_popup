@@ -1,16 +1,16 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:dynamic_popup/dynamic_popup.dart';
+import 'package:dynamic_popup/src/data/model/popup_config.dart';
+import 'package:dynamic_popup/src/data/model/popup_models.dart';
 
-/// Custom implementation of the DynamicPopupRepository
+/// Default implementation of the DynamicPopupRepository
 /// This example shows how to connect to a real backend API
-class CustomDynamicPopupRepository extends BaseDynamicPopupRepository {
+/// Users should extend this class or implement their own version
+class DefaultDynamicPopupRepository {
   static const String _baseUrl = 'https://your-api-domain.com/api';
   
   /// Check if there are popups to show for a specific screen
-  /// This is a required method that must be implemented
-  @override
-  Future<PopupApiResponse?> checkForPopup({
+  static Future<PopupApiResponse?> checkForPopup({
     required String screenName,
     String? userId,
   }) async {
@@ -40,9 +40,7 @@ class CustomDynamicPopupRepository extends BaseDynamicPopupRepository {
   }
 
   /// Submit the user's response to the popup
-  /// This is a required method that must be implemented
-  @override
-  Future<bool> submitPopupResponse({
+  static Future<bool> submitPopupResponse({
     required PopupResponse popupResponse,
   }) async {
     try {
@@ -60,9 +58,7 @@ class CustomDynamicPopupRepository extends BaseDynamicPopupRepository {
   }
 
   /// Mark a popup as shown (for tracking)
-  /// This is an optional method - override only if you need this functionality
-  @override
-  Future<bool> markPopupAsShown({
+  static Future<bool> markPopupAsShown({
     required String popupId,
     String? userId,
   }) async {
@@ -85,9 +81,7 @@ class CustomDynamicPopupRepository extends BaseDynamicPopupRepository {
   }
 
   /// Mark a popup as dismissed (closed without completion)
-  /// This is an optional method - override only if you need this functionality
-  @override
-  Future<bool> markPopupAsDismissed({
+  static Future<bool> markPopupAsDismissed({
     required String popupId,
     String? userId,
   }) async {
@@ -110,9 +104,7 @@ class CustomDynamicPopupRepository extends BaseDynamicPopupRepository {
   }
 
   /// Get a specific popup by ID (for testing)
-  /// This is an optional method - override only if you need this functionality
-  @override
-  Future<PopupConfig?> getPopupById(String popupId) async {
+  static Future<PopupConfig?> getPopupById(String popupId) async {
     try {
       final response = await http.get(
         Uri.parse('$_baseUrl/popup/$popupId'),

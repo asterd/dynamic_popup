@@ -1,6 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:dynamic_popup/dynamic_popup.dart';
+
+/// Mock repository for testing purposes
+class TestPopupRepository extends BaseDynamicPopupRepository {
+  @override
+  Future<PopupApiResponse?> checkForPopup({
+    required String screenName,
+    String? userId,
+  }) async {
+    // For testing, we don't actually check for popups from an API
+    return PopupApiResponse(hasPopup: false);
+  }
+
+  @override
+  Future<bool> submitPopupResponse({
+    required PopupResponse popupResponse,
+  }) async {
+    // For testing, we just pretend the response was submitted successfully
+    print('Test: Submitted response for popup ${popupResponse.popupId}');
+    return true;
+  }
+}
 
 /// Test widget for the dynamic popup system
 class DynamicPopupTestPage extends StatefulWidget {
@@ -11,13 +31,15 @@ class DynamicPopupTestPage extends StatefulWidget {
 }
 
 class _DynamicPopupTestPageState extends State<DynamicPopupTestPage> {
-  final DynamicPopupService _popupService = Get.put(DynamicPopupService());
+  final DynamicPopupService _popupService = DynamicPopupService(
+    repository: TestPopupRepository(),
+  );
 
   @override
   void initState() {
     super.initState();
     // Initialize the service
-    _popupService.onInit();
+    _popupService.init();
   }
 
   @override
@@ -39,21 +61,21 @@ class _DynamicPopupTestPageState extends State<DynamicPopupTestPage> {
             
             // Test Non-blocking popup
             ElevatedButton(
-              onPressed: _showNonBlockingPopup,
+              onPressed: () => _showNonBlockingPopup(context),
               child: const Text('Show Non-blocking Popup'),
             ),
             const SizedBox(height: 12),
             
             // Test Blocking popup
             ElevatedButton(
-              onPressed: _showBlockingPopup,
+              onPressed: () => _showBlockingPopup(context),
               child: const Text('Show Blocking Popup'),
             ),
             const SizedBox(height: 12),
             
             // Test Complex popup with all components
             ElevatedButton(
-              onPressed: _showComplexPopup,
+              onPressed: () => _showComplexPopup(context),
               child: const Text('Show Complex Popup'),
             ),
             const SizedBox(height: 12),
@@ -100,7 +122,10 @@ We have updated our privacy policy. Please review and confirm your preferences.
     );
   }
 
-  void _showNonBlockingPopup() {
+  void _showNonBlockingPopup(BuildContext context) {
+    // Store the context in a local variable to ensure it's still valid
+    final currentContext = context;
+    
     final config = PopupConfig(
       id: 'test_non_blocking',
       title: 'Information',
@@ -117,28 +142,42 @@ We've added some new functionality that we think you'll love.
       showOnce: false, // For testing, allow multiple shows
     );
 
-    Get.dialog(
-      DynamicPopupWidget(
-        config: config,
-        onCompleted: (response) {
-          Get.snackbar(
-            'Completed',
-            'Response: ${response.responses}',
-            backgroundColor: Colors.green.shade100,
-          );
-        },
-        onDismissed: () {
-          Get.snackbar(
-            'Dismissed',
-            'Popup was dismissed',
-            backgroundColor: Colors.grey.shade100,
-          );
-        },
-      ),
+    showDialog(
+      context: currentContext,
+      builder: (BuildContext context) {
+        return DynamicPopupWidget(
+          config: config,
+          onCompleted: (response) {
+            // Check if the context is still mounted before showing snackbar
+            if (!context.mounted) return;
+            
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Response: ${response.responses}'),
+                backgroundColor: Colors.green.shade100,
+              ),
+            );
+          },
+          onDismissed: () {
+            // Check if the context is still mounted before showing snackbar
+            if (!context.mounted) return;
+            
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Popup was dismissed'),
+                backgroundColor: Colors.grey.shade100,
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
-  void _showBlockingPopup() {
+  void _showBlockingPopup(BuildContext context) {
+    // Store the context in a local variable to ensure it's still valid
+    final currentContext = context;
+    
     final config = PopupConfig(
       id: 'test_blocking',
       title: 'Required Action',
@@ -155,22 +194,32 @@ We've added some new functionality that we think you'll love.
       showOnce: false,
     );
 
-    Get.dialog(
-      DynamicPopupWidget(
-        config: config,
-        onCompleted: (response) {
-          Get.snackbar(
-            'Terms Updated',
-            'Thank you for accepting the terms',
-            backgroundColor: Colors.green.shade100,
-          );
-        },
-      ),
+    showDialog(
+      context: currentContext,
       barrierDismissible: false,
+      builder: (BuildContext context) {
+        return DynamicPopupWidget(
+          config: config,
+          onCompleted: (response) {
+            // Check if the context is still mounted before showing snackbar
+            if (!context.mounted) return;
+            
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Thank you for accepting the terms'),
+                backgroundColor: Colors.green.shade100,
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
-  void _showComplexPopup() {
+  void _showComplexPopup(BuildContext context) {
+    // Store the context in a local variable to ensure it's still valid
+    final currentContext = context;
+    
     final config = PopupConfig(
       id: 'test_complex',
       title: 'Complete User Survey',
@@ -202,33 +251,45 @@ Help us improve the app by completing this quick survey.
       showOnce: false,
     );
 
-    Get.dialog(
-      DynamicPopupWidget(
-        config: config,
-        onCompleted: (response) {
-          Get.snackbar(
-            'Survey Completed',
-            'Thank you for completing the survey!',
-            backgroundColor: Colors.green.shade100,
-          );
-        },
-        onDismissed: () {
-          Get.snackbar(
-            'Survey Dismissed',
-            'Survey was dismissed',
-            backgroundColor: Colors.grey.shade100,
-          );
-        },
-      ),
+    showDialog(
+      context: currentContext,
+      builder: (BuildContext context) {
+        return DynamicPopupWidget(
+          config: config,
+          onCompleted: (response) {
+            // Check if the context is still mounted before showing snackbar
+            if (!context.mounted) return;
+            
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Thank you for completing the survey!'),
+                backgroundColor: Colors.green.shade100,
+              ),
+            );
+          },
+          onDismissed: () {
+            // Check if the context is still mounted before showing snackbar
+            if (!context.mounted) return;
+            
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Survey was dismissed'),
+                backgroundColor: Colors.grey.shade100,
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
   void _resetAllStates() {
     _popupService.resetAllPopupStates();
-    Get.snackbar(
-      'Reset',
-      'All popup states have been reset',
-      backgroundColor: Colors.orange.shade100,
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('All popup states have been reset'),
+        backgroundColor: Colors.orange.shade100,
+      ),
     );
   }
 }

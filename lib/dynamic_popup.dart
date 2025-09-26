@@ -8,6 +8,8 @@ export 'src/data/model/popup_models.dart';
 
 // Repository
 export 'src/data/repository/dynamic_popup_repository.dart';
+export 'src/data/repository/base_dynamic_popup_repository.dart';
+export 'src/data/repository/default_dynamic_popup_repository.dart';
 
 // Parser (include new types)
 export 'src/parser/markdown_dynamic_parser.dart';
