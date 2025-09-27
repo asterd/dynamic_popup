@@ -1,10 +1,6 @@
 import 'package:dynamic_popup/dynamic_popup.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
-import 'package:dynamic_popup/src/data/model/popup_config.dart';
-import 'package:dynamic_popup/src/data/model/popup_models.dart';
-import 'package:dynamic_popup/src/parser/markdown_dynamic_parser.dart';
-import 'package:dynamic_popup/src/ui/components/dynamic_component_factory.dart';
 
 class DynamicPopupWidget extends StatefulWidget {
   final PopupConfig config;
@@ -184,7 +180,7 @@ class _DynamicPopupWidgetState extends State<DynamicPopupWidget>
   Widget build(BuildContext context) {
     return PopScope(
       canPop: widget.canDismiss,
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (bool didPop, Object? result) {
         if (!didPop && widget.canDismiss) {
           _handleDismiss();
         }

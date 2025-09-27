@@ -72,7 +72,7 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
           
           // Dropdown
           DropdownButtonFormField<String>(
-            value: selectedValue,
+            initialValue: selectedValue,
             hint: Text(widget.component.placeholder ?? 'Select an option...'),
             items: widget.component.options?.map((option) {
               return DropdownMenuItem(

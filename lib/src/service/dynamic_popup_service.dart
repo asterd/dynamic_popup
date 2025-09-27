@@ -154,7 +154,6 @@ class DynamicPopupService {
       _shownInSession.add(popup.id);
       
       var wasCompleted = false;
-      var wasDismissed = false;
       bool dialogClosed = false;
 
       // Using Flutter's showDialog instead of Get.dialog
@@ -174,7 +173,6 @@ class DynamicPopupService {
             },
             onDismissed: () {
               if (!dialogClosed) {
-                wasDismissed = true;
                 _handlePopupDismissed(popup.id, userId: userId);
                 dialogClosed = true;
                 Navigator.of(context).pop(); // Close the dialog
