@@ -46,6 +46,8 @@ class CustomDynamicPopupRepository extends BaseDynamicPopupRepository {
     required PopupResponse popupResponse,
   }) async {
     try {
+      print('Submitting popup response JSON: ${jsonEncode(popupResponse.toJson())}');
+      
       final response = await http.post(
         Uri.parse('$_baseUrl/popup/response'),
         headers: {'Content-Type': 'application/json'},
@@ -55,56 +57,6 @@ class CustomDynamicPopupRepository extends BaseDynamicPopupRepository {
       return response.statusCode == 200;
     } catch (e) {
       print('Exception in submitPopupResponse: $e');
-      return false;
-    }
-  }
-
-  /// Mark a popup as shown (for tracking)
-  /// This is an optional method - override only if you need this functionality
-  @override
-  Future<bool> markPopupAsShown({
-    required String popupId,
-    String? userId,
-  }) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$_baseUrl/popup/shown'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'popupId': popupId,
-          'timestamp': DateTime.now().toIso8601String(),
-          if (userId != null) 'userId': userId,
-        }),
-      );
-      
-      return response.statusCode == 200;
-    } catch (e) {
-      print('Exception in markPopupAsShown: $e');
-      return false;
-    }
-  }
-
-  /// Mark a popup as dismissed (closed without completion)
-  /// This is an optional method - override only if you need this functionality
-  @override
-  Future<bool> markPopupAsDismissed({
-    required String popupId,
-    String? userId,
-  }) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$_baseUrl/popup/dismissed'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'popupId': popupId,
-          'timestamp': DateTime.now().toIso8601String(),
-          if (userId != null) 'userId': userId,
-        }),
-      );
-      
-      return response.statusCode == 200;
-    } catch (e) {
-      print('Exception in markPopupAsDismissed: $e');
       return false;
     }
   }

@@ -10,8 +10,6 @@ A flexible and customizable dynamic popup system for Flutter with markdown suppo
 - **Automatic validation** of required fields
 - **Persistent state management** (show once, completed/dismissed)
 - **Blocking and non-blocking** popup behaviors
-- **Smooth animations** and modern design
-- **Offline support** with local storage
 - **Easy to customize** and extend
 - **No dependency on GetX** - works with any Flutter app
 - **Minimal API requirements** - only two endpoints required
@@ -22,7 +20,7 @@ Add this to your package's pubspec.yaml file:
 
 ```yaml
 dependencies:
-  dynamic_popup: ^1.0.0
+  dynamic_popup: ^1.0.1
 ```
 
 Then run:
@@ -36,12 +34,10 @@ flutter pub get
 ### 1. Non-blocking Popup
 - User can close without completing
 - Ideal for information, optional surveys, feature discovery
-- "Cancel" button available
 
 ### 2. Blocking Popup  
 - User must complete to continue
 - Ideal for terms of service, privacy policy, required data
-- No close button
 
 ## 🛠 Supported Components
 
@@ -199,45 +195,7 @@ class MySimplePopupRepository extends BaseDynamicPopupRepository {
 }
 ```
 
-### 2. Advanced Implementation (With Optional Methods)
-
-```dart
-class MyAdvancedPopupRepository extends BaseDynamicPopupRepository {
-  @override
-  Future<PopupApiResponse?> checkForPopup({
-    required String screenName,
-    String? userId,
-  }) async {
-    // Required method
-  }
-
-  @override
-  Future<bool> submitPopupResponse({
-    required PopupResponse popupResponse,
-  }) async {
-    // Required method
-  }
-  
-  // Optional methods - implement only what you need
-  @override
-  Future<bool> markPopupAsShown({
-    required String popupId,
-    String? userId,
-  }) async {
-    // Optional tracking
-  }
-  
-  @override
-  Future<bool> markPopupAsDismissed({
-    required String popupId,
-    String? userId,
-  }) async {
-    // Optional tracking
-  }
-}
-```
-
-### 3. Direct Usage Without Service
+### 2. Direct Usage Without Service
 
 ```dart
 // Fetch popup config from your API directly
@@ -322,8 +280,7 @@ lib/
 │   │   │   └── popup_models.dart
 │   │   └── repository/
 │   │       ├── dynamic_popup_repository.dart
-│   │       ├── base_dynamic_popup_repository.dart
-│   │       └── default_dynamic_popup_repository.dart
+│   │       └── base_dynamic_popup_repository.dart
 │   ├── parser/
 │   │   └── markdown_dynamic_parser.dart
 │   ├── service/
@@ -387,6 +344,16 @@ case DynamicComponentType.newType:
 - Test with simple popups first
 
 ## 📝 Changelog
+
+### v1.0.1
+- Simplified repository pattern by reducing required methods from 7 to 3
+- Removed complex optional methods (markPopupAsShown, markPopupAsDismissed) for easier implementation
+- Streamlined example code by removing redundant buttons and simplifying demonstrations
+- Improved documentation with clearer, more concise instructions
+- Added JSON logging in example apps for better debugging of popup responses
+- Enhanced snackbar colors in examples for better readability and user experience
+- Fixed undefined variable error in API integration example
+- Maintained all core functionality while reducing complexity
 
 ### v1.0.0
 - ✅ Base dynamic popup system

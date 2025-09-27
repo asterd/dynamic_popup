@@ -153,18 +153,9 @@ class DynamicPopupService {
       // Mark as shown in session (only in memory)
       _shownInSession.add(popup.id);
       
-      // Track the view (optional)
-      try {
-        await repository.markPopupAsShown(
-          popupId: popup.id,
-          userId: userId,
-        );
-      } catch (e) {
-        print('Error tracking popup shown (optional): $e');
-      }
-
       var wasCompleted = false;
       var wasDismissed = false;
+      bool dialogClosed = false;
 
       // Using Flutter's showDialog instead of Get.dialog
       await showDialog(
@@ -174,18 +165,18 @@ class DynamicPopupService {
           return DynamicPopupWidget(
             config: popup,
             onCompleted: (response) {
-              wasCompleted = true;
-              _handlePopupCompleted(response, userId: userId);
-              // Check if the context is still mounted before popping
-              if (context.mounted) {
+              if (!dialogClosed) {
+                wasCompleted = true;
+                _handlePopupCompleted(response, userId: userId);
+                dialogClosed = true;
                 Navigator.of(context).pop(); // Close the dialog
               }
             },
             onDismissed: () {
-              wasDismissed = true;
-              _handlePopupDismissed(popup.id, userId: userId);
-              // Check if the context is still mounted before popping
-              if (context.mounted) {
+              if (!dialogClosed) {
+                wasDismissed = true;
+                _handlePopupDismissed(popup.id, userId: userId);
+                dialogClosed = true;
                 Navigator.of(context).pop(); // Close the dialog
               }
             },
@@ -229,16 +220,6 @@ class DynamicPopupService {
     );
     _popupStates[popupId] = state;
     _savePopupState(state);
-
-    // Track dismissal (optional)
-    try {
-      await repository.markPopupAsDismissed(
-        popupId: popupId,
-        userId: userId,
-      );
-    } catch (e) {
-      print('Error tracking popup dismissed (optional): $e');
-    }
   }
 
   /// Submit popup response to backend
@@ -271,8 +252,11 @@ class DynamicPopupService {
         if (!context.mounted) return false;
         
         return await _showPopup(popup, context: context, userId: userId);
+      } else {
+        // Popup not found - this is not necessarily an error
+        print('Popup with ID $popupId not found');
+        return false;
       }
-      return false;
     } catch (e) {
       print('Error showing popup by ID: $e');
       return false;
@@ -282,7 +266,6 @@ class DynamicPopupService {
   /// Reset popup state for a specific ID (for testing)
   Future<void> resetPopupState(String popupId) async {
     try {
-      await repository.resetPopupState(popupId: popupId);
       _popupStates.remove(popupId);
       _shownInSession.remove(popupId);
       final prefs = await SharedPreferences.getInstance();

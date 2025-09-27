@@ -1,5 +1,4 @@
 import 'package:dynamic_popup/dynamic_popup.dart';
-import 'package:dynamic_popup/src/data/repository/dynamic_popup_repository.dart';
 
 /// Base implementation of DynamicPopupRepository
 /// Users can extend this class and override only the methods they need

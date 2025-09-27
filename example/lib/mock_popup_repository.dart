@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:dynamic_popup/dynamic_popup.dart';
 
 /// Mock implementation of DynamicPopupRepository for demonstration purposes
@@ -66,7 +67,7 @@ Help us improve our product with this 30-second survey.
     String? userId,
   }) async {
     // Simulate network delay
-    await Future.delayed(Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 500));
 
     // Check if we have a popup for this screen
     if (_mockPopups.containsKey(screenName)) {
@@ -95,44 +96,21 @@ Help us improve our product with this 30-second survey.
     required PopupResponse popupResponse,
   }) async {
     // Simulate network delay
-    await Future.delayed(Duration(milliseconds: 300));
+    await Future.delayed(const Duration(milliseconds: 300));
 
     print('Mock API: Submitted response for popup ${popupResponse.popupId}');
     print('Mock API: Response data: ${popupResponse.responses}');
+    // Log the full JSON response
+    print('Mock API: Response JSON: ${jsonEncode(popupResponse.toJson())}');
     
     // In a real implementation, you would send this to your backend
     return true;
   }
 
   @override
-  Future<bool> markPopupAsShown({
-    required String popupId,
-    String? userId,
-  }) async {
-    // Simulate network delay
-    await Future.delayed(Duration(milliseconds: 200));
-
-    _shownPopups.add(popupId);
-    print('Mock API: Marked popup $popupId as shown');
-    return true;
-  }
-
-  @override
-  Future<bool> markPopupAsDismissed({
-    required String popupId,
-    String? userId,
-  }) async {
-    // Simulate network delay
-    await Future.delayed(Duration(milliseconds: 200));
-
-    print('Mock API: Marked popup $popupId as dismissed');
-    return true;
-  }
-
-  @override
   Future<PopupConfig?> getPopupById(String popupId) async {
     // Simulate network delay
-    await Future.delayed(Duration(milliseconds: 300));
+    await Future.delayed(const Duration(milliseconds: 300));
 
     // Find popup by ID
     for (var popup in _mockPopups.values) {

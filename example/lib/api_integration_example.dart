@@ -58,7 +58,7 @@ class SimplePopupRepository extends BaseDynamicPopupRepository {
     // For this example, we'll simulate a response
     
     // Simulate network delay
-    await Future.delayed(Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 500));
     
     // Example response - in a real app, this would come from your API
     if (screenName == 'home') {
@@ -90,7 +90,7 @@ class SimplePopupRepository extends BaseDynamicPopupRepository {
     // For this example, we'll just simulate a successful response
     
     // Simulate network delay
-    await Future.delayed(Duration(milliseconds: 300));
+    await Future.delayed(const Duration(milliseconds: 300));
     
     print('Submitted response for popup ${popupResponse.popupId}');
     print('Response data: ${popupResponse.responses}');
@@ -111,7 +111,7 @@ class AdvancedPopupRepository extends BaseDynamicPopupRepository {
     // return await CustomApiService.checkForPopup(screenName: screenName, userId: userId);
     
     // For demo purposes, simulate a response
-    await Future.delayed(Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 500));
     
     // Example response
     final popup = PopupConfig(
@@ -141,13 +141,12 @@ This popup demonstrates the advanced features.
     // return await CustomApiService.submitPopupResponse(popupResponse);
     
     // For demo purposes, simulate a response
-    await Future.delayed(Duration(milliseconds: 300));
+    await Future.delayed(const Duration(milliseconds: 300));
     print('Advanced: Submitted response for popup ${popupResponse.popupId}');
     return true;
   }
   
   // Optional method - only implement if you need it
-  @override
   Future<bool> markPopupAsShown({
     required String popupId,
     String? userId,
@@ -158,7 +157,6 @@ This popup demonstrates the advanced features.
   }
   
   // Optional method - only implement if you need it
-  @override
   Future<bool> markPopupAsDismissed({
     required String popupId,
     String? userId,
@@ -171,11 +169,13 @@ This popup demonstrates the advanced features.
 
 /// Example widget showing how to use the dynamic popup with custom API integration
 class ApiIntegrationExample extends StatefulWidget {
+  const ApiIntegrationExample({super.key});
+
   @override
-  _ApiIntegrationExampleState createState() => _ApiIntegrationExampleState();
+  ApiIntegrationExampleState createState() => ApiIntegrationExampleState();
 }
 
-class _ApiIntegrationExampleState extends State<ApiIntegrationExample> {
+class ApiIntegrationExampleState extends State<ApiIntegrationExample> {
   // Example with simple repository
   final DynamicPopupService _simpleService = DynamicPopupService(
     repository: SimplePopupRepository(),
@@ -198,7 +198,7 @@ class _ApiIntegrationExampleState extends State<ApiIntegrationExample> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('API Integration Example'),
+        title: const Text('API Integration Example'),
         backgroundColor: Theme.of(context).primaryColor,
       ),
       body: Padding(
@@ -211,32 +211,32 @@ class _ApiIntegrationExampleState extends State<ApiIntegrationExample> {
               style: Theme.of(context).textTheme.headlineSmall,
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 20),
-            Text(
+            const SizedBox(height: 20),
+            const Text(
               'These examples show different ways to integrate the dynamic popup package '
               'with your own custom API implementation.',
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             ElevatedButton(
               onPressed: () => _showSimplePopup(context),
-              child: Text('Simple Implementation'),
+              child: const Text('Simple Implementation'),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () => _showAdvancedPopup(context),
-              child: Text('Advanced Implementation'),
+              child: const Text('Advanced Implementation'),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () => _showDirectPopup(context),
-              child: Text('Direct API Usage'),
+              child: const Text('Direct API Usage'),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _resetMockData,
               style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-              child: Text('Reset Mock Data'),
+              child: const Text('Reset Mock Data'),
             ),
           ],
         ),
@@ -259,9 +259,10 @@ class _ApiIntegrationExampleState extends State<ApiIntegrationExample> {
     
     if (!wasShown) {
       ScaffoldMessenger.of(currentContext).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('No popup to show (simple implementation)'),
           backgroundColor: Colors.orange,
+          behavior: SnackBarBehavior.floating,
         ),
       );
     }
@@ -282,9 +283,10 @@ class _ApiIntegrationExampleState extends State<ApiIntegrationExample> {
     
     if (!wasShown) {
       ScaffoldMessenger.of(currentContext).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('No popup to show (advanced implementation)'),
           backgroundColor: Colors.blue,
+          behavior: SnackBarBehavior.floating,
         ),
       );
     }
@@ -316,18 +318,23 @@ class _ApiIntegrationExampleState extends State<ApiIntegrationExample> {
               // Check if the context is still mounted before showing snackbar
               if (!context.mounted) return;
               
+              // Log the response JSON to console
+              print('Popup response JSON: ${jsonEncode(response.toJson())}');
+              
               if (success) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
+                  const SnackBar(
                     content: Text('Response submitted successfully!'),
                     backgroundColor: Colors.green,
+                    behavior: SnackBarBehavior.floating,
                   ),
                 );
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
+                  const SnackBar(
                     content: Text('Failed to submit response'),
                     backgroundColor: Colors.red,
+                    behavior: SnackBarBehavior.floating,
                   ),
                 );
               }
@@ -338,9 +345,10 @@ class _ApiIntegrationExampleState extends State<ApiIntegrationExample> {
               if (!context.mounted) return;
               
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
+                const SnackBar(
                   content: Text('Popup was dismissed'),
                   backgroundColor: Colors.grey,
+                  behavior: SnackBarBehavior.floating,
                 ),
               );
             },
@@ -376,10 +384,14 @@ This is a fallback popup shown when the API is not available.
               // Check if the context is still mounted before showing snackbar
               if (!context.mounted) return;
               
+              // Log the response JSON to console
+              print('Popup response JSON: ${jsonEncode(response.toJson())}');
+              
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('Fallback response: ${response.responses}'),
                   backgroundColor: Colors.blue,
+                  behavior: SnackBarBehavior.floating,
                 ),
               );
               Navigator.of(context).pop();
@@ -389,9 +401,10 @@ This is a fallback popup shown when the API is not available.
               if (!context.mounted) return;
               
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
+                const SnackBar(
                   content: Text('Fallback popup dismissed'),
                   backgroundColor: Colors.grey,
+                  behavior: SnackBarBehavior.floating,
                 ),
               );
             },
@@ -405,9 +418,10 @@ This is a fallback popup shown when the API is not available.
   void _resetMockData() {
     // In a real app, you might want to reset your mock data or API state
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
+      const SnackBar(
         content: Text('Mock data reset'),
         backgroundColor: Colors.orange,
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }
