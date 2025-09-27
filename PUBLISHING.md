@@ -76,7 +76,9 @@ The `.pubignore` file ensures that only necessary files are published:
 - `pubspec.yaml`
 - `README.md`
 - `CHANGELOG.md`
-- `LICENSE` (if present)
+- `LICENSE`
+- `CONTRIBUTING.md`
+- `CODE_OF_CONDUCT.md`
 - Example code in `example/lib/`
 - Example `pubspec.yaml`
 

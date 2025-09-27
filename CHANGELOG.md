@@ -3,6 +3,9 @@
 - Removed http dependency from core library (moved to example project only)
 - Removed unused DefaultDynamicPopupRepository from core library
 - Added .pubignore file to prevent publishing unnecessary files
+- Added LICENSE file with MIT license
+- Added CONTRIBUTING.md with contribution guidelines
+- Added CODE_OF_CONDUCT.md with community standards
 - Updated documentation to clarify dependency requirements
 - Improved package structure for pub.dev publishing
 
