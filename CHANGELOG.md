@@ -1,3 +1,11 @@
+## 1.0.2
+
+- Removed http dependency from core library (moved to example project only)
+- Removed unused DefaultDynamicPopupRepository from core library
+- Added .pubignore file to prevent publishing unnecessary files
+- Updated documentation to clarify dependency requirements
+- Improved package structure for pub.dev publishing
+
 ## 1.0.1
 
 - Simplified repository pattern by reducing required methods from 7 to 3
@@ -7,6 +15,8 @@
 - Added JSON logging in example apps for better debugging of popup responses
 - Enhanced snackbar colors in examples for better readability and user experience
 - Fixed undefined variable error in API integration example
+- Removed unnecessary http dependency from core library (now only in example)
+- Removed unused DefaultDynamicPopupRepository from core library
 - Maintained all core functionality while reducing complexity
 
 ## 1.0.0

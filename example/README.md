@@ -1,50 +1,107 @@
-# Dynamic Popup Example
+# Dynamic Popup Example App
 
-This is a complete example app demonstrating the features of the [dynamic_popup](https://pub.dev/packages/dynamic_popup) Flutter package.
+This example app demonstrates how to use the `dynamic_popup` package to create dynamic, configurable popups in Flutter applications.
 
 ## Features Demonstrated
 
-1. **Non-blocking Popup** - A popup that users can close without completing
-2. **Blocking Popup** - A popup that users must complete before continuing
-3. **Complex Popup** - A comprehensive popup with all supported components
-4. **Test Page** - A dedicated page for testing all popup components
+- Basic popup implementation with different types (blocking/non-blocking)
+- Custom API integration examples
+- Mock repository implementation for testing
+- JSON response logging for debugging
+- Proper snackbar styling for user feedback
 
 ## Getting Started
 
 1. Clone or download this repository
-2. Navigate to the example directory
+2. Navigate to the `example` directory
 3. Run `flutter pub get` to install dependencies
-4. Run `flutter run` to start the app
+4. Run `flutter run` to start the example app
 
-## How to Use
+## Example Usage
 
-The example app showcases various ways to use the dynamic_popup package:
+The example app showcases several ways to use the dynamic popup system:
 
-### Manual Popup Display
-- Tap "Show Non-blocking Popup" to display a simple informational popup
-- Tap "Show Blocking Popup" to display a required action popup
-- Tap "Show Complex Popup" to see all components in action
+### 1. Manual Popup Display
+Create and display popups manually with custom content:
 
-### Test Page
-- Tap "Open Test Page" to access the built-in test interface with more examples
+```dart
+final config = PopupConfig(
+  id: 'example_popup',
+  title: 'Example Popup',
+  markdownContent: '''
+## Welcome!
 
-### Reset Functionality
-- Tap "Reset All Popup States" to clear all popup tracking data for testing
+[RADIOBUTTON:required:enjoying:Are you enjoying the app?:Yes,No,Neutral]
 
-## Custom Repository Implementation
+[TEXTAREA:optional:feedback:Feedback:Any suggestions?]
+  ''',
+  isBlocking: false,
+  showOnce: true,
+);
 
-The example includes [custom_repository_example.dart](lib/custom_repository_example.dart) which shows how to implement a real backend connection for the dynamic popup system.
+showDialog(
+  context: context,
+  builder: (BuildContext context) {
+    return DynamicPopupWidget(
+      config: config,
+      onCompleted: (response) {
+        print('Popup response: ${response.responses}');
+      },
+    );
+  },
+);
+```
 
-## Supported Components
+### 2. Service-Based Popup Management
+Use the `DynamicPopupService` for more advanced popup management:
 
-- RadioButton
-- Checkbox
-- TextArea
-- TextField
-- Dropdown
+```dart
+// Create a repository that implements your API calls
+class MyPopupRepository extends BaseDynamicPopupRepository {
+  @override
+  Future<PopupApiResponse?> checkForPopup({
+    required String screenName,
+    String? userId,
+  }) async {
+    // Implement your API call here
+  }
 
-Each component can be configured as required or optional and supports various options and placeholders.
+  @override
+  Future<bool> submitPopupResponse({
+    required PopupResponse popupResponse,
+  }) async {
+    // Implement your API call here
+  }
+}
+
+// Initialize the service
+final popupService = DynamicPopupService(
+  repository: MyPopupRepository(),
+);
+popupService.init();
+
+// Check for and show popups automatically
+await popupService.checkAndShowPopup(
+  screenName: 'home_screen',
+  context: context,
+);
+```
+
+## Custom API Integration
+
+The example includes a complete implementation of a custom API repository that shows how to integrate with your own backend services. It demonstrates:
+
+- Making HTTP requests to fetch popup configurations
+- Submitting user responses to your API
+- Handling errors and edge cases
+- Proper JSON serialization
+
+## Screenshots
+
+![Example App Home](screenshots/home.png)
+![Non-blocking Popup](screenshots/non_blocking.png)
+![Blocking Popup](screenshots/blocking.png)
 
 ## Learn More
 
-For detailed documentation on the dynamic_popup package, visit the [main package repository](https://pub.dev/packages/dynamic_popup).
+For detailed documentation on the `dynamic_popup` package, see the [main README](../README.md).

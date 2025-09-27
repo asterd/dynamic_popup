@@ -1,6 +1,6 @@
 name: dynamic_popup
 description: A flexible and customizable dynamic popup system for Flutter with markdown support and interactive components.
-version: 1.0.1
+version: 1.0.2
 homepage: https://github.com/example/dynamic_popup
 
 environment:
@@ -12,7 +12,6 @@ dependencies:
     sdk: flutter
   flutter_html: ^3.0.0
   shared_preferences: ^2.2.2
-  http: ^1.1.0
 
 dev_dependencies:
   flutter_test:

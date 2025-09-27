@@ -1,0 +1,32 @@
+# Build artifacts
+build/
+.dart_tool/
+.packages
+.pub/
+*.lock
+
+# IDE files
+.idea/
+*.swp
+*.swo
+*.DS_Store
+
+# Test coverage
+coverage/
+
+# Example app files that shouldn't be published with the package
+example/build/
+example/.dart_tool/
+example/.packages
+example/.pub/
+example/**/*.lock
+
+# Screenshots directory (if exists)
+example/screenshots/
+
+# Git files
+.git/
+.gitignore
+
+# Other
+*.log
