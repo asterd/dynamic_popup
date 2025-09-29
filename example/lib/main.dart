@@ -258,7 +258,7 @@ This is a simple optional popup with one field.
     // Store the context in a local variable to ensure it's still valid
     final currentContext = context;
     
-    final markdownContent = '''
+    const markdownContent = '''
 ## Required Information
 
 This is a simple required popup with one field.
@@ -269,7 +269,7 @@ This is a simple required popup with one field.
       id: 'example_simple_required',
       title: 'Simple Required Popup',
       markdownContent: markdownContent,
-      isBlocking: false,
+      isBlocking: true,
       showOnce: false, // For testing, allow multiple shows
     );
 
@@ -287,7 +287,7 @@ This is a simple required popup with one field.
                   builder: (BuildContext context) {
                     return AlertDialog(
                       title: const Text('Markdown Content'),
-                      content: SingleChildScrollView(
+                      content: const SingleChildScrollView(
                         child: Text(markdownContent),
                       ),
                       actions: [
