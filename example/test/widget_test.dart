@@ -21,7 +21,8 @@ void main() {
     expect(find.text('Open Test Page'), findsOneWidget);
     expect(find.text('Show Non-blocking Popup'), findsOneWidget);
     expect(find.text('Show Blocking Popup'), findsOneWidget);
-    expect(find.text('Show Complex Popup'), findsOneWidget);
+    expect(find.text('Check for Home Screen Popup (Mock)'), findsOneWidget);
+    expect(find.text('API Integration Example'), findsOneWidget);
     expect(find.text('Reset All Popup States'), findsOneWidget);
   });
 }

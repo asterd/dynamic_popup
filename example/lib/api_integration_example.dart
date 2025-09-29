@@ -68,9 +68,13 @@ class SimplePopupRepository extends BaseDynamicPopupRepository {
         markdownContent: '''
 ## Welcome to our app!
 
-[RADIOBUTTON:required:enjoying:Are you enjoying the app?:Yes,No,Neutral]
+:::dc<radiobutton id="enjoying" required label="Are you enjoying the app?">
+  <option id="yes">Yes</option>
+  <option id="no">No</option>
+  <option id="neutral">Neutral</option>
+</radiobutton>dc:::
 
-[TEXTAREA:optional:feedback:Feedback:Any suggestions?]
+:::dc<textarea id="feedback" label="Feedback" placeholder="Any suggestions?" />dc:::
         ''',
         isBlocking: false,
         showOnce: true,
@@ -122,9 +126,11 @@ class AdvancedPopupRepository extends BaseDynamicPopupRepository {
 
 This popup demonstrates the advanced features.
 
-[TEXTFIELD:required:name:Name:Enter your name]
+:::dc<textfield id="name" required label="Name" placeholder="Enter your name" />dc:::
 
-[CHECKBOX:required:consent:Do you consent?:I agree to the terms]
+:::dc<checkbox id="consent" required label="Do you consent?">
+  <option id="agree">I agree to the terms</option>
+</checkbox>dc:::
       ''',
       isBlocking: true,
       showOnce: true,
@@ -368,7 +374,7 @@ class ApiIntegrationExampleState extends State<ApiIntegrationExample> {
 
 This is a fallback popup shown when the API is not available.
 
-[TEXTFIELD:optional:name:Your Name:Enter your name]
+:::dc<textfield id="name" label="Your Name" placeholder="Enter your name" />dc:::
         ''',
         isBlocking: false,
         showOnce: false,

@@ -1,3 +1,26 @@
+## [1.0.3] - 2025-09-29
+
+### Added
+- Support for option IDs in radio buttons, checkboxes, and dropdowns
+- Smart scrolling for long content in popups
+- Support for multiline syntax with newlines and spaces in component definitions
+- Custom slots support for titles, footers, and action buttons
+- Dedicated examples/documentation screen in the example app
+- View Markdown button in example popups
+
+### Changed
+- Improved markdown syntax from positional parameters to HTML-like syntax
+- Updated component initiator from `:::` to `:::dc<component>dc:::` for better identification
+- Removed support for old positional parameter syntax
+- Updated all examples to use new HTML-like syntax with option IDs
+- Enhanced UI components to send option IDs instead of text values in responses
+- Consolidated test interface into main example screen
+- Improved dialog dismissal handling to prevent overlay issues
+
+### Fixed
+- Ensured option IDs are properly used in popup responses instead of text values
+- Fixed overlay persistence issue when dismissing non-required popups
+
 ## 1.0.2
 
 - Removed http dependency from core library (moved to example project only)

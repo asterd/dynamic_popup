@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:dynamic_popup/dynamic_popup.dart';
 import 'mock_popup_repository.dart';
 import 'api_integration_example.dart';
+import 'examples_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -70,7 +71,57 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               const SizedBox(height: 30),
               
-              // Test Page Button
+              // Simple Optional Popup
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => _showSimpleOptionalPopup(context),
+                  child: const Text('Simple Optional Popup'),
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              // Simple Required Popup
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => _showSimpleRequiredPopup(context),
+                  child: const Text('Simple Required Popup'),
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              // Complex Optional Popup
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => _showComplexOptionalPopup(context),
+                  child: const Text('Complex Optional Popup'),
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              // Complex Required Popup
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => _showComplexRequiredPopup(context),
+                  child: const Text('Complex Required Popup'),
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              // Popup from API (mock)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => _showApiPopup(context),
+                  child: const Text('Popup from API (Mock)'),
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              // Examples/README Screen
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -78,41 +129,12 @@ class _MyHomePageState extends State<MyHomePage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const DynamicPopupTestPage(),
+                        builder: (context) => const ExamplesScreen(),
                       ),
                     );
                   },
-                  child: const Text('Open Test Page'),
-                ),
-              ),
-              const SizedBox(height: 12),
-              
-              // Non-blocking Popup Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => _showNonBlockingPopup(context),
-                  child: const Text('Show Non-blocking Popup'),
-                ),
-              ),
-              const SizedBox(height: 12),
-              
-              // Blocking Popup Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => _showBlockingPopup(context),
-                  child: const Text('Show Blocking Popup'),
-                ),
-              ),
-              const SizedBox(height: 12),
-              
-              // Check for popup on home screen (mock)
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => _checkForPopup(context, 'home_screen'),
-                  child: const Text('Check for Home Screen Popup (Mock)'),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                  child: const Text('View Examples & Documentation'),
                 ),
               ),
               const SizedBox(height: 12),
@@ -151,22 +173,21 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  void _showNonBlockingPopup(BuildContext context) {
+  void _showSimpleOptionalPopup(BuildContext context) {
     // Store the context in a local variable to ensure it's still valid
     final currentContext = context;
     
+    final markdownContent = '''
+## Information
+
+This is a simple optional popup with one field.
+
+:::dc<textfield id="simple_optional_name" label="Your Name" placeholder="Enter your name" />dc:::''';
+    
     final config = PopupConfig(
-      id: 'example_non_blocking',
-      title: 'Information',
-      markdownContent: '''
-## Welcome to Dynamic Popup!
-
-This is a non-blocking popup that allows users to close without completing.
-
-[CHECKBOX:optional:features:Which features are you interested in?:Feature A,Feature B,Feature C]
-
-[TEXTAREA:optional:notes:Any questions or comments?:Feel free to share your thoughts...]
-      ''',
+      id: 'example_simple_optional',
+      title: 'Simple Optional Popup',
+      markdownContent: markdownContent,
       isBlocking: false,
       showOnce: false, // For testing, allow multiple shows
     );
@@ -176,6 +197,31 @@ This is a non-blocking popup that allows users to close without completing.
       builder: (BuildContext context) {
         return DynamicPopupWidget(
           config: config,
+          customActions: [
+            TextButton(
+              onPressed: () {
+                // Show the markdown content in a dialog
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text('Markdown Content'),
+                      content: SingleChildScrollView(
+                        child: Text(markdownContent),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('Close'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              child: const Text('View Markdown'),
+            ),
+          ],
           onCompleted: (response) {
             // Check if the context is still mounted before showing snackbar
             if (!context.mounted) return;
@@ -208,24 +254,225 @@ This is a non-blocking popup that allows users to close without completing.
     );
   }
 
-  void _showBlockingPopup(BuildContext context) {
+  void _showSimpleRequiredPopup(BuildContext context) {
     // Store the context in a local variable to ensure it's still valid
     final currentContext = context;
     
+    final markdownContent = '''
+## Required Information
+
+This is a simple required popup with one field.
+
+:::dc<textfield id="simple_required_name" required label="Your Name" placeholder="Enter your name" />dc:::''';
+    
     final config = PopupConfig(
-      id: 'example_blocking',
-      title: 'Required Action',
-      markdownContent: '''
-## Terms of Service Update
+      id: 'example_simple_required',
+      title: 'Simple Required Popup',
+      markdownContent: markdownContent,
+      isBlocking: false,
+      showOnce: false, // For testing, allow multiple shows
+    );
 
-**Important:** You must accept our updated terms to continue using the app.
+    showDialog(
+      context: currentContext,
+      builder: (BuildContext context) {
+        return DynamicPopupWidget(
+          config: config,
+          customActions: [
+            TextButton(
+              onPressed: () {
+                // Show the markdown content in a dialog
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text('Markdown Content'),
+                      content: SingleChildScrollView(
+                        child: Text(markdownContent),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('Close'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              child: const Text('View Markdown'),
+            ),
+          ],
+          onCompleted: (response) {
+            // Check if the context is still mounted before showing snackbar
+            if (!context.mounted) return;
+            
+            // Log the response JSON to console
+            print('Popup response JSON: ${jsonEncode(response.toJson())}');
+            
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Response: ${response.responses}'),
+                backgroundColor: Colors.green,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          },
+          onDismissed: () {
+            // Check if the context is still mounted before showing snackbar
+            if (!context.mounted) return;
+            
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Popup was dismissed'),
+                backgroundColor: Colors.grey,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 
-[RADIOBUTTON:required:terms_accept:Do you accept the updated terms?:I Accept,I Decline]
+  void _showComplexOptionalPopup(BuildContext context) {
+    // Store the context in a local variable to ensure it's still valid
+    final currentContext = context;
+    
+    final markdownContent = '''
+# Survey
 
-[TEXTFIELD:required:signature:Please type your full name as digital signature:Your full name]
-      ''',
+This is a complex optional popup with multiple fields.
+
+:::dc<textfield id="complex_optional_name" label="Your Name" placeholder="Enter your name" />dc:::
+
+:::dc<dropdown id="complex_optional_age" label="Age Group">
+  <option id="18-25">18-25</option>
+  <option id="26-35">26-35</option>
+  <option id="36-45">36-45</option>
+  <option id="46+">46+</option>
+</dropdown>dc:::
+
+:::dc<checkbox id="complex_optional_interests" label="Interests">
+  <option id="tech">Technology</option>
+  <option id="sports">Sports</option>
+  <option id="music">Music</option>
+  <option id="travel">Travel</option>
+</checkbox>dc:::
+
+:::dc<textarea id="complex_optional_feedback" label="Feedback" placeholder="Share your thoughts..." />dc:::''';
+    
+    final config = PopupConfig(
+      id: 'example_complex_optional',
+      title: 'Complex Optional Popup',
+      markdownContent: markdownContent,
+      isBlocking: false,
+      showOnce: false, // For testing, allow multiple shows
+    );
+
+    showDialog(
+      context: currentContext,
+      builder: (BuildContext context) {
+        return DynamicPopupWidget(
+          config: config,
+          customActions: [
+            TextButton(
+              onPressed: () {
+                // Show the markdown content in a dialog
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text('Markdown Content'),
+                      content: SingleChildScrollView(
+                        child: Text(markdownContent),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('Close'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              child: const Text('View Markdown'),
+            ),
+          ],
+          onCompleted: (response) {
+            // Check if the context is still mounted before showing snackbar
+            if (!context.mounted) return;
+            
+            // Log the response JSON to console
+            print('Popup response JSON: ${jsonEncode(response.toJson())}');
+            
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Response: ${response.responses}'),
+                backgroundColor: Colors.green,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          },
+          onDismissed: () {
+            // Check if the context is still mounted before showing snackbar
+            if (!context.mounted) return;
+            
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Popup was dismissed'),
+                backgroundColor: Colors.grey,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showComplexRequiredPopup(BuildContext context) {
+    // Store the context in a local variable to ensure it's still valid
+    final currentContext = context;
+    
+    final markdownContent = '''
+# Required Survey
+
+This is a complex required popup with multiple fields.
+
+:::dc<textfield id="complex_required_name" required label="Your Name" placeholder="Enter your name" />dc:::
+
+:::dc<dropdown id="complex_required_age" required label="Age Group">
+  <option id="18-25">18-25</option>
+  <option id="26-35">26-35</option>
+  <option id="36-45">36-45</option>
+  <option id="46+">46+</option>
+</dropdown>dc:::
+
+:::dc<radiobutton id="complex_required_satisfaction" required label="Satisfaction">
+  <option id="very_satisfied">Very Satisfied</option>
+  <option id="satisfied">Satisfied</option>
+  <option id="neutral">Neutral</option>
+  <option id="dissatisfied">Dissatisfied</option>
+  <option id="very_dissatisfied">Very Dissatisfied</option>
+</radiobutton>dc:::
+
+:::dc<checkbox id="complex_required_interests" label="Interests">
+  <option id="tech">Technology</option>
+  <option id="sports">Sports</option>
+  <option id="music">Music</option>
+  <option id="travel">Travel</option>
+</checkbox>dc:::
+
+:::dc<textarea id="complex_required_feedback" required label="Feedback" placeholder="Share your thoughts..." />dc:::''';
+    
+    final config = PopupConfig(
+      id: 'example_complex_required',
+      title: 'Complex Required Popup',
+      markdownContent: markdownContent,
       isBlocking: true,
-      showOnce: false,
+      showOnce: false, // For testing, allow multiple shows
     );
 
     showDialog(
@@ -234,6 +481,31 @@ This is a non-blocking popup that allows users to close without completing.
       builder: (BuildContext context) {
         return DynamicPopupWidget(
           config: config,
+          customActions: [
+            TextButton(
+              onPressed: () {
+                // Show the markdown content in a dialog
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text('Markdown Content'),
+                      content: SingleChildScrollView(
+                        child: Text(markdownContent),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('Close'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              child: const Text('View Markdown'),
+            ),
+          ],
           onCompleted: (response) {
             // Check if the context is still mounted before showing snackbar
             if (!context.mounted) return;
@@ -243,7 +515,7 @@ This is a non-blocking popup that allows users to close without completing.
             
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Thank you for accepting the terms'),
+                content: Text('Thank you for completing the survey'),
                 backgroundColor: Colors.green,
                 behavior: SnackBarBehavior.floating,
               ),
@@ -254,25 +526,166 @@ This is a non-blocking popup that allows users to close without completing.
     );
   }
 
-  void _checkForPopup(BuildContext context, String screenName) async {
+  void _showApiPopup(BuildContext context) async {
     // Store the context in a local variable to ensure it's still valid
     final currentContext = context;
     
-    final wasShown = await _popupService.checkAndShowPopup(
-      screenName: screenName,
-      context: currentContext,
+    // First, try to get a popup from the mock API
+    final apiResponse = await _popupService.repository.checkForPopup(
+      screenName: 'product_screen',
     );
-
-    // Check if the context is still mounted before showing snackbar
-    if (!currentContext.mounted) return;
     
-    if (!wasShown) {
-      ScaffoldMessenger.of(currentContext).showSnackBar(
-        SnackBar(
-          content: Text('No popup to show for screen: $screenName (mock)'),
-          backgroundColor: Colors.orange,
-          behavior: SnackBarBehavior.floating,
-        ),
+    if (apiResponse?.hasPopup == true && apiResponse?.popup != null) {
+      final popup = apiResponse!.popup!;
+      
+      // Check if the context is still mounted before showing the dialog
+      if (!currentContext.mounted) return;
+      
+      await showDialog(
+        context: currentContext,
+        barrierDismissible: !popup.isBlocking,
+        builder: (BuildContext context) {
+          return DynamicPopupWidget(
+            config: popup,
+            customActions: [
+              TextButton(
+                onPressed: () {
+                  // Show the markdown content in a dialog
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('Markdown Content'),
+                        content: SingleChildScrollView(
+                          child: Text(popup.markdownContent),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text('Close'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                child: const Text('View Markdown'),
+              ),
+            ],
+            onCompleted: (response) {
+              // Check if the context is still mounted before showing snackbar
+              if (!context.mounted) return;
+              
+              // Log the response JSON to console
+              print('Popup response JSON: ${jsonEncode(response.toJson())}');
+              
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Response: ${response.responses}'),
+                  backgroundColor: Colors.green,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+            onDismissed: () {
+              // Check if the context is still mounted before showing snackbar
+              if (!context.mounted) return;
+              
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Popup was dismissed'),
+                  backgroundColor: Colors.grey,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+          );
+        },
+      );
+    } else {
+      // Show a fallback popup if no API popup is available
+      final markdownContent = '''
+# API Mock Popup
+
+This popup simulates content from an API.
+
+:::dc<radiobutton id="api_mock_consent" required label="Do you consent?">
+  <option id="yes">Yes</option>
+  <option id="no">No</option>
+</radiobutton>dc:::
+
+:::dc<textfield id="api_mock_email" required label="Email" placeholder="Enter your email" />dc:::''';
+      
+      final fallbackConfig = PopupConfig(
+        id: 'fallback_api_popup',
+        title: 'API Mock Popup',
+        markdownContent: markdownContent,
+        isBlocking: false,
+        showOnce: false,
+      );
+
+      // Check if the context is still mounted before showing the dialog
+      if (!currentContext.mounted) return;
+      
+      await showDialog(
+        context: currentContext,
+        builder: (BuildContext context) {
+          return DynamicPopupWidget(
+            config: fallbackConfig,
+            customActions: [
+              TextButton(
+                onPressed: () {
+                  // Show the markdown content in a dialog
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('Markdown Content'),
+                        content: SingleChildScrollView(
+                          child: Text(markdownContent),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text('Close'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                child: const Text('View Markdown'),
+              ),
+            ],
+            onCompleted: (response) {
+              // Check if the context is still mounted before showing snackbar
+              if (!context.mounted) return;
+              
+              // Log the response JSON to console
+              print('Popup response JSON: ${jsonEncode(response.toJson())}');
+              
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Response: ${response.responses}'),
+                  backgroundColor: Colors.green,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+            onDismissed: () {
+              // Check if the context is still mounted before showing snackbar
+              if (!context.mounted) return;
+              
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Popup was dismissed'),
+                  backgroundColor: Colors.grey,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+          );
+        },
       );
     }
   }

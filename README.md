@@ -13,6 +13,8 @@ A flexible and customizable dynamic popup system for Flutter with markdown suppo
 - **Easy to customize** and extend
 - **No dependency on GetX** - works with any Flutter app
 - **Minimal API requirements** - only two endpoints required
+- **Custom slots support** - add custom titles, footers, and action buttons
+- **Smart scrolling** - automatically shows scroll buttons for long content
 
 ## 🚀 Installation
 
@@ -20,7 +22,7 @@ Add this to your package's pubspec.yaml file:
 
 ```yaml
 dependencies:
-  dynamic_popup: ^1.0.2
+  dynamic_popup: ^1.0.3
 ```
 
 Then run:
@@ -44,42 +46,85 @@ flutter pub get
 ## 🛠 Supported Components
 
 ### RadioButton
-```markdown
-[RADIOBUTTON:required:component_id:Label:Option1,Option2,Option3]
+```
+<!-- New HTML-like syntax with custom initiator -->
+:::dc<radiobutton id="component_id" required label="Label">
+  <option id="opt1">Option1</option>
+  <option id="opt2">Option2</option>
+  <option id="opt3">Option3</option>
+</radiobutton>dc:::
 ```
 
 ### Checkbox (single/multiple)
-```markdown
-[CHECKBOX:optional:component_id:Label:Option1,Option2,Option3]
+```
+<!-- New HTML-like syntax with custom initiator -->
+:::dc<checkbox id="component_id" label="Label">
+  <option id="opt1">Option1</option>
+  <option id="opt2">Option2</option>
+  <option id="opt3">Option3</option>
+</checkbox>dc:::
 ```
 
 ### TextArea
-```markdown
-[TEXTAREA:required:component_id:Label:Placeholder text]
+```
+<!-- New HTML-like syntax with custom initiator -->
+:::dc<textarea id="component_id" required label="Label" placeholder="Placeholder text" />dc:::
 ```
 
 ### TextField
-```markdown
-[TEXTFIELD:optional:component_id:Label:Placeholder text]
+```
+<!-- New HTML-like syntax with custom initiator -->
+:::dc<textfield id="component_id" label="Label" placeholder="Placeholder text" />dc:::
 ```
 
 ### Dropdown
-```markdown
-[DROPDOWN:required:component_id:Label:Option1,Option2,Option3]
+```
+<!-- New HTML-like syntax with custom initiator -->
+:::dc<dropdown id="component_id" required label="Label">
+  <option id="opt1">Option1</option>
+  <option id="opt2">Option2</option>
+  <option id="opt3">Option3</option>
+</dropdown>dc:::
 ```
 
 ## 🔧 Placeholder Syntax
 
+### New Syntax (HTML-like with Named Attributes and Custom Initiator)
 ```
-[COMPONENT_TYPE:required/optional:component_id:label:options/placeholder]
+:::dc<component_type id="component_id" required label="Label" placeholder="Placeholder" />dc:::
 ```
 
-**Parameters:**
-- `COMPONENT_TYPE`: Component type (RADIOBUTTON, CHECKBOX, etc.)
-- `required/optional`: Whether the field is required
-- `component_id`: Unique component ID
-- `label`: Label shown to user
-- `options/placeholder`: Options (for radio/checkbox/dropdown) or placeholder (for text)
+**Custom Initiator:** `:::dc<` and `>dc:::` - This prevents conflicts with regular HTML tags in markdown content.
+
+**Multiline Support:** The syntax supports newlines and spaces between the initiator and terminator:
+```
+:::dc
+<component_type id="component_id" required label="Label">
+  <option id="opt1">Option1</option>
+</component_type>
+dc:::
+```
+
+**Attributes:**
+- `id`: Unique component ID (required)
+- `required`: Presence indicates the field is required (optional)
+- `label`: Label shown to user (required)
+- `placeholder`: Placeholder text for text inputs (optional)
+- `default`: Default value (optional)
+
+**Container Components with Option IDs:**
+For components with options (RadioButton, Checkbox, Dropdown), use container syntax with option IDs:
+```html
+:::dc<component_type id="component_id" required label="Label">
+  <option id="option_id_1">Option 1</option>
+  <option id="option_id_2">Option 2</option>
+</component_type>dc:::
+```
+
+**Benefits of Option IDs:**
+- Send option IDs instead of text to the backend
+- Language-independent option identification
+- Easier to maintain when option text changes
 
 ## 💻 Usage
 
@@ -134,15 +179,43 @@ await popupService.resetPopupState('privacy_update_2024');
 popupService.resetAllPopupStates();
 ```
 
-### Using the Test Page
+### Using Custom Slots
 
 ```dart
-import 'package:dynamic_popup/dynamic_popup.dart';
+// Add custom title, footer, and action buttons
+final config = PopupConfig(
+  id: 'custom_popup',
+  title: 'Custom Popup',
+  markdownContent: '''
+## Welcome!
 
-// Navigate to test page
-Navigator.push(
-  context,
-  MaterialPageRoute(builder: (context) => const DynamicPopupTestPage()),
+:::dc<textfield id="name" label="Your Name" placeholder="Enter your name" />dc:::
+  ''',
+  isBlocking: false,
+);
+
+showDialog(
+  context: context,
+  builder: (BuildContext context) {
+    return DynamicPopupWidget(
+      config: config,
+      customTitle: const Text('Custom Title', style: TextStyle(color: Colors.white, fontSize: 24)),
+      customFooter: const Padding(
+        padding: EdgeInsets.all(16),
+        child: Text('This is a custom footer', style: TextStyle(fontStyle: FontStyle.italic)),
+      ),
+      customActions: [
+        TextButton(
+          onPressed: () {
+            // Custom action
+            print('Custom button pressed');
+          },
+          child: const Text('Custom Action'),
+        ),
+      ],
+      onCompleted: (response) => print('Response: ${response.responses}'),
+    );
+  },
 );
 ```
 
@@ -153,7 +226,12 @@ Navigator.push(
 final config = PopupConfig(
   id: 'test_popup',
   title: 'Test',
-  markdownContent: '[RADIOBUTTON:required:test:Test?:Yes,No]',
+  markdownContent: '''
+:::dc<radiobutton id="test" required label="Test?">
+  <option id="yes">Yes</option>
+  <option id="no">No</option>
+</radiobutton>dc:::
+  ''',
   isBlocking: false,
 );
 
@@ -223,50 +301,67 @@ if (popupConfig != null) {
 ## 🧪 Testing
 
 ### Test Page
-Run `DynamicPopupTestPage` to test all components:
-
-```dart
-Navigator.push(
-  context,
-  MaterialPageRoute(builder: (context) => const DynamicPopupTestPage()),
-);
-```
+The example app now includes a comprehensive test page with all popup types and a documentation screen.
 
 ## 📋 Complete Examples
 
 ### Privacy Policy Popup
-```markdown
+```
 # Privacy Policy Update
 
 Our privacy policy has been updated. Please review and confirm your preferences.
 
 ## Required Consent
-[RADIOBUTTON:required:privacy_accept:Do you accept the new privacy policy?:Accept,Decline]
+:::dc<radiobutton id="privacy_accept" required label="Do you accept the new privacy policy?">
+  <option id="accept">Accept</option>
+  <option id="decline">Decline</option>
+</radiobutton>dc:::
 
 ## Data Usage (Optional)
-[CHECKBOX:optional:data_usage:What data can we use?:Analytics,Marketing,Performance,Crash Reports]
+:::dc<checkbox id="data_usage" label="What data can we use?">
+  <option id="analytics">Analytics</option>
+  <option id="marketing">Marketing</option>
+  <option id="performance">Performance</option>
+  <option id="crash">Crash Reports</option>
+</checkbox>dc:::
 
 ## Feedback
-[TEXTAREA:optional:feedback:Comments or questions?:Share your thoughts...]
+:::dc<textarea id="feedback" label="Comments or questions?" placeholder="Share your thoughts..." />dc:::
 
 **Thank you for your attention.**
 ```
 
 ### Complete Survey
-```markdown  
+```
 # Satisfaction Survey
 
 Help us improve the app by completing this brief survey.
 
-[TEXTFIELD:required:name:Full Name:Enter your name]
+:::dc<textfield id="name" required label="Full Name" placeholder="Enter your name" />dc:::
 
-[DROPDOWN:required:frequency:Usage Frequency:Daily,Weekly,Monthly,Occasional]
+:::dc<dropdown id="frequency" required label="Usage Frequency">
+  <option id="daily">Daily</option>
+  <option id="weekly">Weekly</option>
+  <option id="monthly">Monthly</option>
+  <option id="occasional">Occasional</option>
+</dropdown>dc:::
 
-[CHECKBOX:required:features:Which features do you use?:Restaurant,Special Sales,PCM,Snack Bar]
+:::dc<checkbox id="features" required label="Which features do you use?">
+  <option id="restaurant">Restaurant</option>
+  <option id="sales">Special Sales</option>
+  <option id="pcm">PCM</option>
+  <option id="snack">Snack Bar</option>
+</checkbox>dc:::
 
-[TEXTAREA:required:suggestions:Improvement suggestions:Describe your ideas...]
+:::dc<textarea id="suggestions" required label="Improvement suggestions" placeholder="Describe your ideas..." />dc:::
 
-[RADIOBUTTON:required:recommend:Would you recommend the app?:Definitely,Probably,Not Sure,Probably Not,Definitely Not]
+:::dc<radiobutton id="recommend" required label="Would you recommend the app?">
+  <option id="definitely">Definitely</option>
+  <option id="probably">Probably</option>
+  <option id="not_sure">Not Sure</option>
+  <option id="probably_not">Probably Not</option>
+  <option id="definitely_not">Definitely Not</option>
+</radiobutton>dc:::
 ```
 
 ## 🏗 Architecture
@@ -296,8 +391,6 @@ lib/
 │   │   │   ├── dynamic_dropdown.dart
 │   │   │   └── dynamic_component_factory.dart
 │   │   └── dynamic_popup_widget.dart
-│   └── test/
-│       └── dynamic_popup_test_page.dart
 └── dynamic_popup.dart
 ```
 
@@ -347,14 +440,46 @@ case DynamicComponentType.newType:
 
 ## 📝 Changelog
 
-### v1.0.2
+### [1.0.3] - 2025-09-29
+
+### Added
+- Support for option IDs in radio buttons, checkboxes, and dropdowns
+- Smart scrolling for long content in popups
+- Support for multiline syntax with newlines and spaces in component definitions
+- Custom slots support for titles, footers, and action buttons
+- Dedicated examples/documentation screen in the example app
+- View Markdown button in example popups
+
+### Changed
+- Improved markdown syntax from positional parameters to HTML-like syntax
+- Updated component initiator from `:::` to `:::dc<component>dc:::` for better identification
+- Removed support for old positional parameter syntax
+- Updated all examples to use new HTML-like syntax with option IDs
+- Enhanced UI components to send option IDs instead of text values in responses
+- Consolidated test interface into main example screen
+- Improved dialog dismissal handling to prevent overlay issues
+
+### Fixed
+- Ensured option IDs are properly used in popup responses instead of text values
+- Fixed overlay persistence issue when dismissing non-required popups
+
+### 1.0.2
+
 - Removed http dependency from core library (moved to example project only)
 - Removed unused DefaultDynamicPopupRepository from core library
 - Added .pubignore file to prevent publishing unnecessary files
+- Added LICENSE file with MIT license
+- Added CONTRIBUTING.md with contribution guidelines
+- Added CODE_OF_CONDUCT.md with community standards
+- Fixed flutter analyze issues:
+  - Removed unused local variable in dynamic_popup_service.dart
+  - Removed unnecessary imports in dynamic_popup_widget.dart
+  - Updated deprecated onPopInvoked to onPopInvokedWithResult
+  - Updated deprecated value parameter to initialValue in dropdown
 - Updated documentation to clarify dependency requirements
 - Improved package structure for pub.dev publishing
 
-### v1.0.1
+### 1.0.1
 - Simplified repository pattern by reducing required methods from 7 to 3
 - Removed complex optional methods (markPopupAsShown, markPopupAsDismissed) for easier implementation
 - Streamlined example code by removing redundant buttons and simplifying demonstrations
@@ -366,7 +491,7 @@ case DynamicComponentType.newType:
 - Removed unused DefaultDynamicPopupRepository from core library
 - Maintained all core functionality while reducing complexity
 
-### v1.0.0
+### 1.0.0
 - ✅ Base dynamic popup system
 - ✅ Markdown parser with placeholders
 - ✅ Interactive UI components  

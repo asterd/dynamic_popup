@@ -71,7 +71,42 @@ class _DynamicRadioButtonState extends State<DynamicRadioButton> {
           const SizedBox(height: 8),
           
           // Options
-          if (widget.component.options != null)
+          if (widget.component.optionData != null)
+            Column(
+              children: widget.component.optionData!.map((optionData) {
+                // Use ID if available, otherwise use text
+                final optionValue = optionData.id ?? optionData.text;
+                return ListTile(
+                  title: Text(
+                    optionData.text,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: widget.hasError ? Colors.red.shade700 : Colors.black87,
+                    ),
+                  ),
+                  leading: Radio<String>(
+                    value: optionValue,
+                    groupValue: selectedValue,
+                    activeColor: widget.hasError ? Colors.red : Theme.of(context).primaryColor,
+                    onChanged: (String? value) {
+                      setState(() {
+                        selectedValue = value;
+                      });
+                      widget.onChanged(widget.component.id, value);
+                    },
+                  ),
+                  contentPadding: EdgeInsets.zero,
+                  dense: true,
+                  onTap: () {
+                    setState(() {
+                      selectedValue = optionValue;
+                    });
+                    widget.onChanged(widget.component.id, optionValue);
+                  },
+                );
+              }).toList(),
+            )
+          else if (widget.component.options != null)
             Column(
               children: widget.component.options!.map((option) {
                 return ListTile(

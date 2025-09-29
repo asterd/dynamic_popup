@@ -40,49 +40,111 @@ class ParsedMarkdownContent {
 
 // Parser for markdown with placeholders for dynamic components
 class MarkdownDynamicParser {
-  static const String _componentPlaceholderPattern = r'\[([A-Z]+)(?::([^:\]]+))*\]';
+  // Updated pattern to support new syntax with improved initiator
+  // This pattern now supports multiline syntax with spaces and newlines
+  static const String _componentPattern = r':::dc\s*<([a-zA-Z]+)([^>]*?)(\/?)>'; // Match opening tag with optional whitespace
+  static const String _componentClosePattern = r'<\/([a-zA-Z]+)>\s*dc:::'; // Match closing tag with optional whitespace
+  static const String _optionPattern = r'<option(?:\s+id="([^"]*)")?>([^<]+)<\/option>';
   
   /// Parse markdown content with extraction of dynamic components
   static ParsedMarkdownContent parse(String markdownContent) {
     final components = <DynamicComponent>[];
     final contentFlow = <ContentElement>[];
     
-    // RegExp to find component placeholders
-    final regex = RegExp(_componentPlaceholderPattern, caseSensitive: false);
-    
+    // Process the content step by step
     int lastEnd = 0;
+    int position = 0;
     
-    for (final match in regex.allMatches(markdownContent)) {
-      final placeholder = match.group(0)!;
+    while (position < markdownContent.length) {
+      // Look for new syntax components with improved initiator
+      final newMatch = RegExp(_componentPattern, multiLine: true).firstMatch(markdownContent.substring(position));
       
-      // Add markdown content before this placeholder
-      if (match.start > lastEnd) {
-        final markdownChunk = markdownContent.substring(lastEnd, match.start);
-        if (markdownChunk.trim().isNotEmpty) {
-          contentFlow.add(ContentElement.markdown(markdownChunk));
+      if (newMatch != null) {
+        final candidate = ComponentCandidate(
+          position: position + newMatch.start,
+          endPosition: position + newMatch.end,
+          match: newMatch,
+          isNewSyntax: true,
+        );
+        
+        // Add markdown content before this component
+        if (candidate.position > lastEnd) {
+          final markdownChunk = markdownContent.substring(lastEnd, candidate.position);
+          if (markdownChunk.trim().isNotEmpty) {
+            contentFlow.add(ContentElement.markdown(markdownChunk));
+          }
         }
-      }
-      
-      try {
-        // Create dynamic component from placeholder
-        final component = DynamicComponent.fromPlaceholder(placeholder);
-        components.add(component);
-        contentFlow.add(ContentElement.component(component));
-      } catch (e) {
-        // Log error but continue parsing
-        print('Error parsing placeholder "$placeholder": $e');
-        // Add placeholder as text if it can't be parsed
-        contentFlow.add(ContentElement.markdown(placeholder));
-      }
-      
-      lastEnd = match.end;
-    }
-    
-    // Add remaining markdown content
-    if (lastEnd < markdownContent.length) {
-      final remainingMarkdown = markdownContent.substring(lastEnd);
-      if (remainingMarkdown.trim().isNotEmpty) {
-        contentFlow.add(ContentElement.markdown(remainingMarkdown));
+        
+        try {
+          DynamicComponent component;
+          
+          // New syntax: :::dc<componentType attribute1="value1" attribute2="value2" /> or with content
+          final fullMatch = candidate.match.group(0)!;
+          final tagType = candidate.match.group(1)!.toLowerCase();
+          final attributes = candidate.match.group(2) ?? '';
+          final isSelfClosing = candidate.match.group(3) == '/';
+          
+          List<OptionData>? options;
+          int componentEndPos = candidate.endPosition;
+          
+          // If not self-closing, look for closing tag and extract inner content
+          if (!isSelfClosing) {
+            // Find the matching closing tag with dc::: suffix (allowing for whitespace)
+            final searchStart = candidate.endPosition;
+            final remainder = markdownContent.substring(searchStart);
+            final closeRegex = RegExp('<\\/$tagType>\\s*dc:::', multiLine: true);
+            final closeMatch = closeRegex.firstMatch(remainder);
+            
+            if (closeMatch != null) {
+              final innerContent = remainder.substring(0, closeMatch.start);
+              // Extract options with IDs if present
+              final optionRegex = RegExp(_optionPattern);
+              final optionMatches = optionRegex.allMatches(innerContent);
+              if (optionMatches.isNotEmpty) {
+                options = optionMatches.map((m) {
+                  final id = m.group(1); // Option ID
+                  final text = m.group(2); // Option text
+                  return OptionData(id: id, text: text!);
+                }).toList();
+              }
+              
+              // Update position to after the closing tag (including dc::: and whitespace)
+              componentEndPos = searchStart + closeMatch.end;
+            } else {
+              // No closing tag found, treat as self-closing
+              componentEndPos = candidate.endPosition;
+            }
+          } else {
+            // For self-closing components, we need to account for the dc::: suffix with possible whitespace
+            // Check if the component ends with dc::: allowing for whitespace
+            final fullComponentPattern = RegExp('${RegExp.escape(fullMatch)}\\s*dc:::', multiLine: true);
+            final fullMatchResult = fullComponentPattern.firstMatch(markdownContent.substring(position));
+            if (fullMatchResult != null) {
+              componentEndPos = position + fullMatchResult.end;
+            }
+          }
+          
+          component = DynamicComponent.fromHtmlTag(tagType, attributes, options);
+          position = componentEndPos;
+          
+          components.add(component);
+          contentFlow.add(ContentElement.component(component));
+          lastEnd = position;
+        } catch (e) {
+          // Log error but continue parsing
+          // Move past this component
+          position = candidate.endPosition;
+          lastEnd = position;
+        }
+      } else {
+        // No more components, add remaining content and break
+        if (lastEnd < markdownContent.length) {
+          final remainingMarkdown = markdownContent.substring(lastEnd);
+          if (remainingMarkdown.trim().isNotEmpty) {
+            contentFlow.add(ContentElement.markdown(remainingMarkdown));
+          }
+        }
+        break;
       }
     }
     
@@ -133,17 +195,19 @@ class MarkdownDynamicParser {
   
   /// Extract all placeholders from markdown text
   static List<String> extractPlaceholders(String markdownContent) {
-    final regex = RegExp(_componentPlaceholderPattern, caseSensitive: false);
-    return regex.allMatches(markdownContent)
-        .map((match) => match.group(0)!)
-        .toList();
+    final newRegex = RegExp(_componentPattern, caseSensitive: false, multiLine: true);
+    return newRegex.allMatches(markdownContent).map((m) => m.group(0)!).toList();
   }
   
   /// Validate if a placeholder has the correct format
   static bool isValidPlaceholder(String placeholder) {
     try {
-      DynamicComponent.fromPlaceholder(placeholder);
-      return true;
+      // Try new syntax - now supporting multiline with whitespace
+      final regex = RegExp(r':::dc\s*<.*?>\s*dc:::', dotAll: true);
+      if (regex.hasMatch(placeholder)) {
+        return true;
+      }
+      return false;
     } catch (e) {
       return false;
     }
@@ -216,4 +280,19 @@ class MarkdownDynamicParser {
     </div>
     ''';
   }
+}
+
+// Helper class for component candidates
+class ComponentCandidate {
+  final int position;
+  final int endPosition;
+  final RegExpMatch match;
+  final bool isNewSyntax;
+  
+  ComponentCandidate({
+    required this.position,
+    required this.endPosition,
+    required this.match,
+    required this.isNewSyntax,
+  });
 }

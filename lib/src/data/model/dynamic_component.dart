@@ -14,6 +14,7 @@ class DynamicComponent {
   final String label;
   final bool isRequired;
   final List<String>? options; // For radio button, checkbox multiple, dropdown
+  final List<OptionData>? optionData; // Extended option data with IDs
   final String? placeholder;
   final String? defaultValue;
   final int? maxLength;
@@ -28,6 +29,7 @@ class DynamicComponent {
     required this.label,
     this.isRequired = false,
     this.options,
+    this.optionData,
     this.placeholder,
     this.defaultValue,
     this.maxLength,
@@ -37,6 +39,8 @@ class DynamicComponent {
     this.metadata,
   });
 
+  // Comment out or remove the old factory method since we no longer support the old syntax
+  /*
   factory DynamicComponent.fromPlaceholder(String placeholder) {
     // Parse placeholder of type: [RADIOBUTTON:required:id:label:option1,option2,option3]
     final parts = placeholder.substring(1, placeholder.length - 1).split(':');
@@ -89,6 +93,64 @@ class DynamicComponent {
       minLines: type == DynamicComponentType.textArea ? 2 : 1,
     );
   }
+  */
+
+  // New factory method to create components from HTML-like tags
+  factory DynamicComponent.fromHtmlTag(String tagType, String attributes, List<OptionData>? options) {
+    // Parse attributes from the format: key="value" key2="value2" or boolean attributes like "required"
+    final attributeMap = <String, String>{};
+    final attrRegex = RegExp(r'(\w+)="([^"]*)"');
+    
+    // First parse key="value" attributes
+    for (final match in attrRegex.allMatches(attributes)) {
+      attributeMap[match.group(1)!] = match.group(2)!;
+    }
+    
+    // Then check for boolean attributes (present without values)
+    final required = attributes.contains('required');
+    
+    final id = attributeMap['id'] ?? 'component_${DateTime.now().millisecondsSinceEpoch}';
+    final label = attributeMap['label'] ?? 'Field';
+    final placeholder = attributeMap['placeholder'];
+    final defaultValue = attributeMap['default'];
+    
+    DynamicComponentType type;
+    switch (tagType.toLowerCase()) {
+      case 'radiobutton':
+        type = DynamicComponentType.radioButton;
+        break;
+      case 'checkbox':
+        type = DynamicComponentType.checkbox;
+        break;
+      case 'textarea':
+        type = DynamicComponentType.textArea;
+        break;
+      case 'textfield':
+        type = DynamicComponentType.textField;
+        break;
+      case 'dropdown':
+        type = DynamicComponentType.dropdown;
+        break;
+      default:
+        throw ArgumentError('Unsupported component type: $tagType');
+    }
+
+    // Extract just the text values for backward compatibility
+    final optionTexts = options?.map((o) => o.text).toList();
+
+    return DynamicComponent(
+      id: id,
+      type: type,
+      label: label,
+      isRequired: required,
+      options: optionTexts,
+      optionData: options,
+      placeholder: placeholder,
+      defaultValue: defaultValue,
+      maxLines: type == DynamicComponentType.textArea ? 4 : 1,
+      minLines: type == DynamicComponentType.textArea ? 2 : 1,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -97,6 +159,7 @@ class DynamicComponent {
       'label': label,
       'isRequired': isRequired,
       'options': options,
+      'optionData': optionData?.map((o) => {'id': o.id, 'text': o.text}).toList(),
       'placeholder': placeholder,
       'defaultValue': defaultValue,
       'maxLength': maxLength,
@@ -106,4 +169,15 @@ class DynamicComponent {
       'metadata': metadata,
     };
   }
+}
+
+// Helper class for option data with ID support
+class OptionData {
+  final String? id;
+  final String text;
+  
+  OptionData({required this.id, required this.text});
+  
+  @override
+  String toString() => id != null ? '$text|$id' : text;
 }

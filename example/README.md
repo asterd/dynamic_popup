@@ -31,9 +31,13 @@ final config = PopupConfig(
   markdownContent: '''
 ## Welcome!
 
-[RADIOBUTTON:required:enjoying:Are you enjoying the app?:Yes,No,Neutral]
+:::dc<radiobutton id="enjoying" required label="Are you enjoying the app?">
+  <option id="yes">Yes</option>
+  <option id="no">No</option>
+  <option id="neutral">Neutral</option>
+</radiobutton>dc:::
 
-[TEXTAREA:optional:feedback:Feedback:Any suggestions?]
+:::dc<textarea id="feedback" label="Feedback" placeholder="Any suggestions?" />dc:::
   ''',
   isBlocking: false,
   showOnce: true,

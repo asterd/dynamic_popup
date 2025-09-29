@@ -1,5 +1,3 @@
-import 'dart:async';
-import 'dart:convert';
 import 'package:dynamic_popup/dynamic_popup.dart';
 
 /// Mock implementation of DynamicPopupRepository for demonstration purposes
@@ -15,9 +13,13 @@ class MockDynamicPopupRepository extends BaseDynamicPopupRepository {
 
 We're excited to have you here. Take a moment to explore our new features.
 
-[CHECKBOX:optional:interests:What are you interested in?:Product Updates,Special Offers,New Features]
+:::dc<checkbox id="interests" label="What are you interested in?">
+  <option id="updates">Product Updates</option>
+  <option id="offers">Special Offers</option>
+  <option id="features">New Features</option>
+</checkbox>dc:::
 
-[TEXTAREA:optional:feedback:Do you have any feedback?:We'd love to hear from you...]
+:::dc<textarea id="feedback" label="Do you have any feedback?" placeholder="We'd love to hear from you..." />dc:::
       ''',
       isBlocking: false,
       showOnce: true,
@@ -30,9 +32,16 @@ We're excited to have you here. Take a moment to explore our new features.
 
 We've added new privacy settings for better control over your data.
 
-[RADIOBUTTON:required:privacy_consent:Do you consent to analytics?:Yes,No]
+:::dc<radiobutton id="privacy_consent" required label="Do you consent to analytics?">
+  <option id="yes">Yes</option>
+  <option id="no">No</option>
+</radiobutton>dc:::
 
-[DROPDOWN:optional:notification_pref:Notification preferences:All,Important Only,None]
+:::dc<dropdown id="notification_pref" label="Notification preferences">
+  <option id="all">All</option>
+  <option id="important">Important Only</option>
+  <option id="none">None</option>
+</dropdown>dc:::
       ''',
       isBlocking: true,
       showOnce: true,
@@ -45,13 +54,22 @@ We've added new privacy settings for better control over your data.
 
 Help us improve our product with this 30-second survey.
 
-[TEXTFIELD:required:name:Your Name:Enter your name]
+:::dc<textfield id="name" required label="Your Name" placeholder="Enter your name" />dc:::
 
-[RADIOBUTTON:required:satisfaction:How satisfied are you?:Very Satisfied,Satisfied,Neutral,Dissatisfied,Very Dissatisfied]
+:::dc<radiobutton id="satisfaction" required label="How satisfied are you?">
+  <option id="very_satisfied">Very Satisfied</option>
+  <option id="satisfied">Satisfied</option>
+  <option id="neutral">Neutral</option>
+  <option id="dissatisfied">Dissatisfied</option>
+  <option id="very_dissatisfied">Very Dissatisfied</option>
+</radiobutton>dc:::
 
-[TEXTAREA:optional:suggestions:Suggestions for improvement:Any ideas?]
+:::dc<textarea id="suggestions" label="Suggestions for improvement" placeholder="Any ideas?" />dc:::
 
-[CHECKBOX:optional:contact:Can we contact you?:Email,Phone]
+:::dc<checkbox id="contact" label="Can we contact you?">
+  <option id="email">Email</option>
+  <option id="phone">Phone</option>
+</checkbox>dc:::
       ''',
       isBlocking: false,
       showOnce: false, // Allow multiple shows for testing
@@ -101,7 +119,7 @@ Help us improve our product with this 30-second survey.
     print('Mock API: Submitted response for popup ${popupResponse.popupId}');
     print('Mock API: Response data: ${popupResponse.responses}');
     // Log the full JSON response
-    print('Mock API: Response JSON: ${jsonEncode(popupResponse.toJson())}');
+    // print('Mock API: Response JSON: ${jsonEncode(popupResponse.toJson())}');
     
     // In a real implementation, you would send this to your backend
     return true;

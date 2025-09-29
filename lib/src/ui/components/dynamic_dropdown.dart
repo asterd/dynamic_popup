@@ -74,17 +74,31 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
           DropdownButtonFormField<String>(
             initialValue: selectedValue,
             hint: Text(widget.component.placeholder ?? 'Select an option...'),
-            items: widget.component.options?.map((option) {
-              return DropdownMenuItem(
-                value: option,
-                child: Text(
-                  option,
-                  style: TextStyle(
-                    color: widget.hasError ? Colors.red.shade700 : Colors.black87,
-                  ),
-                ),
-              );
-            }).toList(),
+            items: widget.component.optionData != null 
+              ? widget.component.optionData!.map((optionData) {
+                  // Use ID if available, otherwise use text
+                  final optionValue = optionData.id ?? optionData.text;
+                  return DropdownMenuItem(
+                    value: optionValue,
+                    child: Text(
+                      optionData.text,
+                      style: TextStyle(
+                        color: widget.hasError ? Colors.red.shade700 : Colors.black87,
+                      ),
+                    ),
+                  );
+                }).toList()
+              : widget.component.options?.map((option) {
+                  return DropdownMenuItem(
+                    value: option,
+                    child: Text(
+                      option,
+                      style: TextStyle(
+                        color: widget.hasError ? Colors.red.shade700 : Colors.black87,
+                      ),
+                    ),
+                  );
+                }).toList(),
             decoration: InputDecoration(
               filled: true,
               fillColor: widget.hasError ? Colors.red.shade100 : Colors.white,

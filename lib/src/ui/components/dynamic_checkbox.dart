@@ -87,7 +87,30 @@ class _DynamicCheckboxState extends State<DynamicCheckbox> {
           const SizedBox(height: 8),
           
           // Options
-          if (widget.component.options != null)
+          if (widget.component.optionData != null)
+            Column(
+              children: widget.component.optionData!.map((optionData) {
+                // Use ID if available, otherwise use text
+                final optionValue = optionData.id ?? optionData.text;
+                return CheckboxListTile(
+                  title: Text(
+                    optionData.text,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: widget.hasError ? Colors.red.shade700 : Colors.black87,
+                    ),
+                  ),
+                  value: selectedValues.contains(optionValue),
+                  activeColor: widget.hasError ? Colors.red : Theme.of(context).primaryColor,
+                  onChanged: (bool? value) {
+                    _onChanged(optionValue, value);
+                  },
+                  contentPadding: EdgeInsets.zero,
+                  dense: true,
+                );
+              }).toList(),
+            )
+          else if (widget.component.options != null)
             Column(
               children: widget.component.options!.map((option) {
                 return CheckboxListTile(
