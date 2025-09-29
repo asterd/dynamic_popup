@@ -1,49 +1,10 @@
 import 'package:dynamic_popup/src/data/model/dynamic_component.dart';
 
-// Enum for content types in the flow
-enum ContentType {
-  markdown,
-  component,
-}
-
-// Content element in the flow
-class ContentElement {
-  final ContentType type;
-  final String? markdownContent;
-  final DynamicComponent? component;
-  
-  ContentElement.markdown(this.markdownContent) 
-      : type = ContentType.markdown, component = null;
-  
-  ContentElement.component(this.component) 
-      : type = ContentType.component, markdownContent = null;
-}
-
-// Model for parsed markdown content
-class ParsedMarkdownContent {
-  final List<ContentElement> contentFlow; // Ordered flow of content
-  final List<DynamicComponent> components; // List of components for reference
-
-  ParsedMarkdownContent({
-    required this.contentFlow,
-    required this.components,
-  });
-  
-  // Backward compatibility
-  String get htmlContent => contentFlow
-      .where((e) => e.type == ContentType.markdown)
-      .map((e) => e.markdownContent ?? '')
-      .join('\n');
-      
-  List<int> get componentPositions => [];
-}
-
 // Parser for markdown with placeholders for dynamic components
 class MarkdownDynamicParser {
   // Updated pattern to support new syntax with improved initiator
   // This pattern now supports multiline syntax with spaces and newlines
   static const String _componentPattern = r':::dc\s*<([a-zA-Z]+)([^>]*?)(\/?)>'; // Match opening tag with optional whitespace
-  static const String _componentClosePattern = r'<\/([a-zA-Z]+)>\s*dc:::'; // Match closing tag with optional whitespace
   static const String _optionPattern = r'<option(?:\s+id="([^"]*)")?>([^<]+)<\/option>';
   
   /// Parse markdown content with extraction of dynamic components
@@ -238,61 +199,40 @@ class MarkdownDynamicParser {
     final combinedHtml = htmlParts.join('\n');
     
     return '''
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .component-preview { 
-          border: 2px dashed #ccc; 
-          padding: 10px; 
-          margin: 10px 0; 
-          background-color: #f9f9f9;
-        }
-        .required { color: red; }
-      </style>
-    </head>
-    <body>
-      $combinedHtml
-    </body>
-    </html>
-    ''';
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .component { border: 1px solid #ccc; padding: 10px; margin: 10px 0; border-radius: 5px; }
+    .component-label { font-weight: bold; color: #333; }
+    .component-type { color: #666; font-size: 0.9em; }
+    .component-required { color: red; }
+  </style>
+</head>
+<body>
+  $combinedHtml
+</body>
+</html>
+''';
   }
   
   /// Generate HTML preview for a component
   static String _generateComponentPreviewHtml(DynamicComponent component) {
-    final requiredMarker = component.isRequired ? '<span class="required"> *</span>' : '';
-    final optionsText = component.options != null ? 
-        '<br><small>Options: ${component.options!.join(', ')}</small>' : '';
-    final placeholderText = component.placeholder != null ? 
-        '<br><small>Placeholder: ${component.placeholder}</small>' : '';
-        
+    final requiredMark = component.isRequired ? '<span class="component-required"> *</span>' : '';
+    final optionsHtml = component.optionData != null 
+        ? component.optionData!.map((o) => '<li>${o.text}${o.id != null ? ' (ID: ${o.id})' : ''}</li>').join('')
+        : component.options != null 
+            ? component.options!.map((o) => '<li>$o</li>').join('')
+            : '';
+    
     return '''
-    <div class="component-preview">
-      <strong>${component.type.toString().split('.').last} Component</strong>
-      <br>
-      <strong>ID:</strong> ${component.id}
-      <br>
-      <strong>Label:</strong> ${component.label}$requiredMarker
-      $optionsText
-      $placeholderText
-    </div>
-    ''';
+<div class="component">
+  <div class="component-label">${component.label}$requiredMark</div>
+  <div class="component-type">${component.type.name} (ID: ${component.id})</div>
+  ${optionsHtml.isNotEmpty ? '<ul>$optionsHtml</ul>' : ''}
+  ${component.placeholder != null ? '<div>Placeholder: ${component.placeholder}</div>' : ''}
+</div>
+''';
   }
-}
-
-// Helper class for component candidates
-class ComponentCandidate {
-  final int position;
-  final int endPosition;
-  final RegExpMatch match;
-  final bool isNewSyntax;
-  
-  ComponentCandidate({
-    required this.position,
-    required this.endPosition,
-    required this.match,
-    required this.isNewSyntax,
-  });
 }

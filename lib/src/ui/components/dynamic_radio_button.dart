@@ -76,7 +76,7 @@ class _DynamicRadioButtonState extends State<DynamicRadioButton> {
               children: widget.component.optionData!.map((optionData) {
                 // Use ID if available, otherwise use text
                 final optionValue = optionData.id ?? optionData.text;
-                return ListTile(
+                return RadioListTile<String>(
                   title: Text(
                     optionData.text,
                     style: TextStyle(
@@ -84,32 +84,24 @@ class _DynamicRadioButtonState extends State<DynamicRadioButton> {
                       color: widget.hasError ? Colors.red.shade700 : Colors.black87,
                     ),
                   ),
-                  leading: Radio<String>(
-                    value: optionValue,
-                    groupValue: selectedValue,
-                    activeColor: widget.hasError ? Colors.red : Theme.of(context).primaryColor,
-                    onChanged: (String? value) {
-                      setState(() {
-                        selectedValue = value;
-                      });
-                      widget.onChanged(widget.component.id, value);
-                    },
-                  ),
+                  value: optionValue,
+                  groupValue: selectedValue,
+                  activeColor: widget.hasError ? Colors.red : Theme.of(context).primaryColor,
+                  onChanged: (String? value) {
+                    setState(() {
+                      selectedValue = value;
+                    });
+                    widget.onChanged(widget.component.id, value);
+                  },
                   contentPadding: EdgeInsets.zero,
                   dense: true,
-                  onTap: () {
-                    setState(() {
-                      selectedValue = optionValue;
-                    });
-                    widget.onChanged(widget.component.id, optionValue);
-                  },
                 );
               }).toList(),
             )
           else if (widget.component.options != null)
             Column(
               children: widget.component.options!.map((option) {
-                return ListTile(
+                return RadioListTile<String>(
                   title: Text(
                     option,
                     style: TextStyle(
@@ -117,25 +109,17 @@ class _DynamicRadioButtonState extends State<DynamicRadioButton> {
                       color: widget.hasError ? Colors.red.shade700 : Colors.black87,
                     ),
                   ),
-                  leading: Radio<String>(
-                    value: option,
-                    groupValue: selectedValue,
-                    activeColor: widget.hasError ? Colors.red : Theme.of(context).primaryColor,
-                    onChanged: (String? value) {
-                      setState(() {
-                        selectedValue = value;
-                      });
-                      widget.onChanged(widget.component.id, value);
-                    },
-                  ),
+                  value: option,
+                  groupValue: selectedValue,
+                  activeColor: widget.hasError ? Colors.red : Theme.of(context).primaryColor,
+                  onChanged: (String? value) {
+                    setState(() {
+                      selectedValue = value;
+                    });
+                    widget.onChanged(widget.component.id, value);
+                  },
                   contentPadding: EdgeInsets.zero,
                   dense: true,
-                  onTap: () {
-                    setState(() {
-                      selectedValue = option;
-                    });
-                    widget.onChanged(widget.component.id, option);
-                  },
                 );
               }).toList(),
             ),

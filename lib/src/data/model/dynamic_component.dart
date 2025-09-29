@@ -7,6 +7,53 @@ enum DynamicComponentType {
   dropdown,
 }
 
+// Enum for content types in parsed markdown
+enum ContentType {
+  markdown,
+  component,
+}
+
+// Model for content elements in parsed markdown
+class ContentElement {
+  final ContentType type;
+  final String? markdownContent;
+  final DynamicComponent? component;
+
+  ContentElement.markdown(this.markdownContent) : 
+    type = ContentType.markdown,
+    component = null;
+
+  ContentElement.component(this.component) : 
+    type = ContentType.component,
+    markdownContent = null;
+}
+
+// Model for parsed markdown content
+class ParsedMarkdownContent {
+  final List<ContentElement> contentFlow;
+  final List<DynamicComponent> components;
+
+  ParsedMarkdownContent({
+    required this.contentFlow,
+    required this.components,
+  });
+}
+
+// Model for component candidate during parsing
+class ComponentCandidate {
+  final int position;
+  final int endPosition;
+  final RegExpMatch match;
+  final bool isNewSyntax;
+
+  ComponentCandidate({
+    required this.position,
+    required this.endPosition,
+    required this.match,
+    required this.isNewSyntax,
+  });
+}
+
 // Model for dynamic component configuration
 class DynamicComponent {
   final String id;
