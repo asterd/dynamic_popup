@@ -29,8 +29,26 @@ class DynamicPopupService {
   }
 
   /// Load popup states from local storage (only permanent states)
-  void _loadLocalPopupStates() {
+  void _loadLocalPopupStates() async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final keys = prefs.getKeys();
+      
+      for (var key in keys) {
+        if (key.startsWith(_storageKeyPrefix)) {
+          final json = prefs.getString(key);
+          if (json != null) {
+            try {
+              final state = PopupState.fromJson(jsonDecode(json));
+              _popupStates[state.popupId] = state;
+            } catch (e) {
+              print('Error parsing popup state for key $key: $e');
+            }
+          }
+        }
+      }
+      
+      print('Loaded ${_popupStates.length} popup states from local storage');
       // NOT loading _shownInSession from storage - resets on every app start
       print('Popup states loaded - session tracking starts fresh');
     } catch (e) {
@@ -41,14 +59,32 @@ class DynamicPopupService {
   /// Reset all popup states (for testing)
   void resetAllPopupStates() {
     try {
-      // Note: _storage.getKeys() might not be available in SharedPreferences
-      // Reset only what we have in memory and clear session
+      // Clear all popup states from memory
       _popupStates.clear();
       _shownInSession.clear(); // Reset session too
-
+      
+      // Clear all popup states from storage
+      _clearAllStoredPopupStates();
+      
       print('All popup states reset');
     } catch (e) {
       print('Error resetting all popup states: $e');
+    }
+  }
+
+  /// Clear all stored popup states from local storage
+  Future<void> _clearAllStoredPopupStates() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final keys = prefs.getKeys();
+      
+      for (var key in keys) {
+        if (key.startsWith(_storageKeyPrefix)) {
+          await prefs.remove(key);
+        }
+      }
+    } catch (e) {
+      print('Error clearing stored popup states: $e');
     }
   }
 

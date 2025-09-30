@@ -31,8 +31,10 @@ class _DynamicPopupWidgetState extends State<DynamicPopupWidget>
   late ParsedMarkdownContent _parsedContent;
   final Map<String, dynamic> _responses = {};
   final Map<String, bool> _componentErrors = {};
+  final Map<String, GlobalKey> _componentKeys = {}; // Keys for scrolling to components
   bool _isSubmitting = false;
   bool _hasValidationErrors = false; // Track if there are validation errors
+  String? _firstInvalidComponentId; // Track the first invalid component
   bool _dialogClosed = false; // Track if dialog has been closed
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
@@ -69,6 +71,7 @@ class _DynamicPopupWidgetState extends State<DynamicPopupWidget>
     for (final component in _parsedContent.components) {
       _responses[component.id] = DynamicComponentFactory.getDefaultValue(component);
       _componentErrors[component.id] = false;
+      _componentKeys[component.id] = GlobalKey(); // Initialize keys for all components
     }
   }
 
@@ -84,17 +87,23 @@ class _DynamicPopupWidgetState extends State<DynamicPopupWidget>
       _componentErrors[componentId] = false; // Clear error when user interacts
       // Clear global validation error state when user interacts
       _hasValidationErrors = false;
+      _firstInvalidComponentId = null;
     });
   }
 
   bool _validateForm() {
     bool isValid = true;
     final newErrors = <String, bool>{};
+    String? firstInvalidId;
 
     for (final component in _parsedContent.components) {
       final value = _responses[component.id];
       final isComponentValid = DynamicComponentFactory.validateComponent(component, value);
       newErrors[component.id] = !isComponentValid;
+      
+      if (!isComponentValid && firstInvalidId == null) {
+        firstInvalidId = component.id; // Track the first invalid component
+      }
       
       if (!isComponentValid) {
         isValid = false;
@@ -104,6 +113,7 @@ class _DynamicPopupWidgetState extends State<DynamicPopupWidget>
     setState(() {
       _componentErrors.addAll(newErrors);
       _hasValidationErrors = !isValid; // Set global validation error state
+      _firstInvalidComponentId = firstInvalidId; // Store first invalid component ID
     });
 
     return isValid;
@@ -114,12 +124,17 @@ class _DynamicPopupWidgetState extends State<DynamicPopupWidget>
 
     if (!_validateForm()) {
       _showValidationError();
+      // Scroll to the first invalid component
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToFirstInvalidComponent();
+      });
       return;
     }
 
     setState(() {
       _isSubmitting = true;
       _hasValidationErrors = false; // Clear validation errors on submit
+      _firstInvalidComponentId = null;
     });
 
     try {
@@ -153,6 +168,19 @@ class _DynamicPopupWidgetState extends State<DynamicPopupWidget>
       setState(() {
         _isSubmitting = false;
       });
+    }
+  }
+
+  void _scrollToFirstInvalidComponent() {
+    if (_firstInvalidComponentId != null) {
+      final key = _componentKeys[_firstInvalidComponentId];
+      if (key?.currentContext != null) {
+        Scrollable.ensureVisible(
+          key!.currentContext!,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+      }
     }
   }
 
@@ -228,11 +256,6 @@ class _DynamicPopupWidgetState extends State<DynamicPopupWidget>
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        // Add border to indicate validation errors
-        border: Border.all(
-          color: _hasValidationErrors ? Colors.red.shade700 : Colors.transparent,
-          width: _hasValidationErrors ? 2.0 : 0.0,
-        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.2),
@@ -267,7 +290,7 @@ class _DynamicPopupWidgetState extends State<DynamicPopupWidget>
       decoration: BoxDecoration(
         color: Theme.of(context).primaryColor,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-        // Add red border to header when there are validation errors
+        // Add red border only to header when there are validation errors
         border: _hasValidationErrors 
           ? Border(
               top: BorderSide(color: Colors.red.shade700, width: 3.0),
@@ -362,11 +385,14 @@ class _DynamicPopupWidgetState extends State<DynamicPopupWidget>
   }
 
   Widget _buildComponent(DynamicComponent component) {
-    return DynamicComponentFactory.createComponent(
-      component: component,
-      onChanged: _handleComponentChange,
-      initialValue: _responses[component.id],
-      hasError: _componentErrors[component.id] ?? false,
+    return KeyedSubtree(
+      key: _componentKeys[component.id],
+      child: DynamicComponentFactory.createComponent(
+        component: component,
+        onChanged: _handleComponentChange,
+        initialValue: _responses[component.id],
+        hasError: _componentErrors[component.id] ?? false,
+      ),
     );
   }
 
