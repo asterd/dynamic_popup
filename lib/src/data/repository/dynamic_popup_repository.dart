@@ -19,6 +19,24 @@ abstract class DynamicPopupRepository {
     required PopupResponse popupResponse,
   });
 
+  /// Called when a popup is shown to the user
+  /// This method is OPTIONAL - override only if you need this functionality
+  Future<void> popupShown({
+    required String popupId,
+    String? userId,
+  }) async {
+    // Default implementation does nothing
+  }
+
+  /// Called when a popup is dismissed by the user
+  /// This method is OPTIONAL - override only if you need this functionality
+  Future<void> popupDismissed({
+    required String popupId,
+    String? userId,
+  }) async {
+    // Default implementation does nothing
+  }
+
   /// Get a specific popup by ID (for testing)
   /// This method is OPTIONAL - override only if you need this functionality
   Future<PopupConfig?> getPopupById(String popupId) async {

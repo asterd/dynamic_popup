@@ -32,6 +32,7 @@ class _DynamicPopupWidgetState extends State<DynamicPopupWidget>
   final Map<String, dynamic> _responses = {};
   final Map<String, bool> _componentErrors = {};
   bool _isSubmitting = false;
+  bool _hasValidationErrors = false; // Track if there are validation errors
   bool _dialogClosed = false; // Track if dialog has been closed
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
@@ -81,6 +82,8 @@ class _DynamicPopupWidgetState extends State<DynamicPopupWidget>
     setState(() {
       _responses[componentId] = value;
       _componentErrors[componentId] = false; // Clear error when user interacts
+      // Clear global validation error state when user interacts
+      _hasValidationErrors = false;
     });
   }
 
@@ -100,6 +103,7 @@ class _DynamicPopupWidgetState extends State<DynamicPopupWidget>
 
     setState(() {
       _componentErrors.addAll(newErrors);
+      _hasValidationErrors = !isValid; // Set global validation error state
     });
 
     return isValid;
@@ -115,6 +119,7 @@ class _DynamicPopupWidgetState extends State<DynamicPopupWidget>
 
     setState(() {
       _isSubmitting = true;
+      _hasValidationErrors = false; // Clear validation errors on submit
     });
 
     try {
@@ -172,7 +177,7 @@ class _DynamicPopupWidgetState extends State<DynamicPopupWidget>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Please fill in all required fields to continue'),
-        backgroundColor: Colors.orange.shade100,
+        backgroundColor: Colors.red.shade700, // Changed from orange to red
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -183,7 +188,7 @@ class _DynamicPopupWidgetState extends State<DynamicPopupWidget>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('An error occurred while submitting. Please try again.'),
-        backgroundColor: Colors.red.shade100,
+        backgroundColor: Colors.red.shade700, // Changed from red.shade100 to red.shade700
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -223,6 +228,11 @@ class _DynamicPopupWidgetState extends State<DynamicPopupWidget>
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
+        // Add border to indicate validation errors
+        border: Border.all(
+          color: _hasValidationErrors ? Colors.red.shade700 : Colors.transparent,
+          width: _hasValidationErrors ? 2.0 : 0.0,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.2),
@@ -257,6 +267,14 @@ class _DynamicPopupWidgetState extends State<DynamicPopupWidget>
       decoration: BoxDecoration(
         color: Theme.of(context).primaryColor,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        // Add red border to header when there are validation errors
+        border: _hasValidationErrors 
+          ? Border(
+              top: BorderSide(color: Colors.red.shade700, width: 3.0),
+              left: BorderSide(color: Colors.red.shade700, width: 3.0),
+              right: BorderSide(color: Colors.red.shade700, width: 3.0),
+            )
+          : null,
       ),
       child: Row(
         children: [

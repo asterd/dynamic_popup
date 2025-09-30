@@ -126,6 +126,30 @@ Help us improve our product with this 30-second survey.
   }
 
   @override
+  Future<void> popupShown({
+    required String popupId,
+    String? userId,
+  }) async {
+    // Simulate network delay
+    await Future.delayed(const Duration(milliseconds: 100));
+    
+    print('Mock API: Popup $popupId shown to user $userId');
+    // Track shown popups for showOnce functionality
+    _shownPopups.add(popupId);
+  }
+
+  @override
+  Future<void> popupDismissed({
+    required String popupId,
+    String? userId,
+  }) async {
+    // Simulate network delay
+    await Future.delayed(const Duration(milliseconds: 100));
+    
+    print('Mock API: Popup $popupId dismissed by user $userId');
+  }
+
+  @override
   Future<PopupConfig?> getPopupById(String popupId) async {
     // Simulate network delay
     await Future.delayed(const Duration(milliseconds: 300));

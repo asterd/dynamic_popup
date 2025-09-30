@@ -1,3 +1,20 @@
+## [1.0.4] - 2025-09-30
+
+### Added
+- Optional lifecycle event hooks in repository interface (`popupShown`, `popupDismissed`)
+- Enhanced visual feedback for form validation with red-themed error indicators
+- Global popup border highlighting for validation errors
+- Header border highlighting for improved error visibility
+
+### Changed
+- Improved popup state management for `showOnce` popups to prevent reopening
+- Snackbar error messages now use red color scheme for better visibility
+- Repository interface extended with optional methods while maintaining backward compatibility
+
+### Fixed
+- Fixed issue where `showOnce` popups would reappear after being completed or dismissed
+- Enhanced form validation feedback with both local component and global popup highlighting
+
 ## [1.0.3] - 2025-09-29
 
 ### Added

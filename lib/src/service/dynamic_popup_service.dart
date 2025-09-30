@@ -153,6 +153,9 @@ class DynamicPopupService {
       // Mark as shown in session (only in memory)
       _shownInSession.add(popup.id);
       
+      // Call popupShown event
+      await repository.popupShown(popupId: popup.id, userId: userId);
+      
       var wasCompleted = false;
       bool dialogClosed = false;
 
@@ -218,6 +221,9 @@ class DynamicPopupService {
     );
     _popupStates[popupId] = state;
     _savePopupState(state);
+    
+    // Call popupDismissed event
+    await repository.popupDismissed(popupId: popupId, userId: userId);
   }
 
   /// Submit popup response to backend

@@ -15,4 +15,23 @@ abstract class BaseDynamicPopupRepository extends DynamicPopupRepository {
   Future<bool> submitPopupResponse({
     required PopupResponse popupResponse,
   });
+
+  // Optional methods can be overridden
+  @override
+  Future<void> popupShown({
+    required String popupId,
+    String? userId,
+  }) async {
+    // Default implementation does nothing
+    super.popupShown(popupId: popupId, userId: userId);
+  }
+
+  @override
+  Future<void> popupDismissed({
+    required String popupId,
+    String? userId,
+  }) async {
+    // Default implementation does nothing
+    super.popupDismissed(popupId: popupId, userId: userId);
+  }
 }
