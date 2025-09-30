@@ -19,7 +19,9 @@ class DynamicPopupService {
   bool get isCheckingPopup => _isCheckingPopup;
 
   /// Create a new DynamicPopupService with a repository
-  DynamicPopupService({required this.repository});
+  DynamicPopupService({required this.repository}) {
+    this.init();
+  }
 
   /// Initialize the service
   /// Call this when your app starts

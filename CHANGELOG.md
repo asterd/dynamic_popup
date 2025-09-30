@@ -1,3 +1,8 @@
+## [1.0.6]
+
+### Changed
+- Fix issue where popup state was not persisted correctly
+
 ## [1.0.5]
 
 ### Added
