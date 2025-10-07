@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Popup Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        
+        .example-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #fafafa;
+        }
+        
+        .example-title {
+            margin-top: 0;
+            color: #1976d2;
+        }
+        
+        .code-block {
+            background-color: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        
+        .btn {
+            background-color: #1976d2;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: inline-block;
+            margin: 10px 5px;
+        }
+        
+        .btn:hover {
+            background-color: #1565c0;
+        }
+        
+        .btn-secondary {
+            background-color: #757575;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #616161;
+        }
+        
+        .response-output {
+            background-color: #e8f5e9;
+            border: 1px solid #c8e6c9;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .response-output h3 {
+            margin-top: 0;
+            color: #2e7d32;
+        }
+        
+        .response-content {
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dynamic Popup JavaScript Implementation</h1>
+        
+        <div class="example-section">
+            <h2 class="example-title">Simple Text Field Example</h2>
+            <div class="code-block">
+:::dc&lt;textfield id="name" label="Your Name" placeholder="Enter your name" /&gt;dc:::
+            </div>
+            <button class="btn" onclick="showSimpleTextFieldPopup()">Show Popup</button>
+        </div>
+        
+        <div class="example-section">
+            <h2 class="example-title">Required Text Field Example</h2>
+            <div class="code-block">
+:::dc&lt;textfield id="email" required label="Email" placeholder="Enter your email" /&gt;dc:::
+            </div>
+            <button class="btn" onclick="showRequiredTextFieldPopup()">Show Popup</button>
+        </div>
+        
+        <div class="example-section">
+            <h2 class="example-title">Radio Button Example</h2>
+            <div class="code-block">
+:::dc&lt;radiobutton id="satisfaction" required label="Satisfaction"&gt;
+  &lt;option id="very_satisfied"&gt;Very Satisfied&lt;/option&gt;
+  &lt;option id="satisfied"&gt;Satisfied&lt;/option&gt;
+  &lt;option id="neutral"&gt;Neutral&lt;/option&gt;
+  &lt;option id="dissatisfied"&gt;Dissatisfied&lt;/option&gt;
+&lt;/radiobutton&gt;dc:::
+            </div>
+            <button class="btn" onclick="showRadioButtonPopup()">Show Popup</button>
+        </div>
+        
+        <div class="example-section">
+            <h2 class="example-title">Checkbox Example</h2>
+            <div class="code-block">
+:::dc&lt;checkbox id="interests" label="Interests"&gt;
+  &lt;option id="tech"&gt;Technology&lt;/option&gt;
+  &lt;option id="sports"&gt;Sports&lt;/option&gt;
+  &lt;option id="music"&gt;Music&lt;/option&gt;
+  &lt;option id="travel"&gt;Travel&lt;/option&gt;
+&lt;/checkbox&gt;dc:::
+            </div>
+            <button class="btn" onclick="showCheckboxPopup()">Show Popup</button>
+        </div>
+        
+        <div class="example-section">
+            <h2 class="example-title">Dropdown Example</h2>
+            <div class="code-block">
+:::dc&lt;dropdown id="country" required label="Country"&gt;
+  &lt;option id="us"&gt;United States&lt;/option&gt;
+  &lt;option id="ca"&gt;Canada&lt;/option&gt;
+  &lt;option id="uk"&gt;United Kingdom&lt;/option&gt;
+  &lt;option id="au"&gt;Australia&lt;/option&gt;
+&lt;/dropdown&gt;dc:::
+            </div>
+            <button class="btn" onclick="showDropdownPopup()">Show Popup</button>
+        </div>
+        
+        <div class="example-section">
+            <h2 class="example-title">Text Area Example</h2>
+            <div class="code-block">
+:::dc&lt;textarea id="feedback" label="Feedback" placeholder="Share your thoughts..." /&gt;dc:::
+            </div>
+            <button class="btn" onclick="showTextAreaPopup()">Show Popup</button>
+        </div>
+        
+        <div class="example-section">
+            <h2 class="example-title">Complete Survey Example</h2>
+            <div class="code-block">
+# Customer Survey
+
+Thank you for taking our survey. Your feedback is important to us.
+
+:::dc&lt;textfield id="name" required label="Full Name" placeholder="Enter your name" /&gt;dc:::
+
+:::dc&lt;dropdown id="age" required label="Age Group"&gt;
+  &lt;option id="18-25"&gt;18-25&lt;/option&gt;
+  &lt;option id="26-35"&gt;26-35&lt;/option&gt;
+  &lt;option id="36-45"&gt;36-45&lt;/option&gt;
+  &lt;option id="46+"&gt;46+&lt;/option&gt;
+&lt;/dropdown&gt;dc:::
+
+:::dc&lt;radiobutton id="satisfaction" required label="How satisfied are you?"&gt;
+  &lt;option id="very_satisfied"&gt;Very Satisfied&lt;/option&gt;
+  &lt;option id="satisfied"&gt;Satisfied&lt;/option&gt;
+  &lt;option id="neutral"&gt;Neutral&lt;/option&gt;
+  &lt;option id="dissatisfied"&gt;Dissatisfied&lt;/option&gt;
+&lt;/radiobutton&gt;dc:::
+
+:::dc&lt;checkbox id="interests" label="Interests"&gt;
+  &lt;option id="tech"&gt;Technology&lt;/option&gt;
+  &lt;option id="sports"&gt;Sports&lt;/option&gt;
+  &lt;option id="music"&gt;Music&lt;/option&gt;
+  &lt;option id="travel"&gt;Travel&lt;/option&gt;
+&lt;/checkbox&gt;dc:::
+
+:::dc&lt;textarea id="comments" label="Additional Comments" placeholder="Any other thoughts?" /&gt;dc:::
+            </div>
+            <button class="btn" onclick="showCompleteSurveyPopup()">Show Survey Popup</button>
+            <button class="btn btn-secondary" onclick="showBlockingSurveyPopup()">Show Blocking Survey</button>
+        </div>
+        
+        <div id="responseOutput" class="response-output">
+            <h3>Popup Response:</h3>
+            <div id="responseContent" class="response-content"></div>
+        </div>
+    </div>
+
+    <!-- Include the DynamicPopup library -->
+    <script src="dynamicPopup.js"></script>
+    
+    <script>
+        // Function to display popup response
+        function displayResponse(response) {
+            const responseOutput = document.getElementById('responseOutput');
+            const responseContent = document.getElementById('responseContent');
+            
+            responseContent.textContent = JSON.stringify(response, null, 2);
+            responseOutput.style.display = 'block';
+            
+            // Scroll to response
+            responseOutput.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Simple text field popup
+        function showSimpleTextFieldPopup() {
+            const config = {
+                id: 'simple_text_field',
+                title: 'Simple Text Field',
+                markdownContent: `
+# Simple Text Field
+
+This is a simple text field example.
+
+:::dc<textfield id="name" label="Your Name" placeholder="Enter your name" />dc:::
+                `,
+                isBlocking: false
+            };
+            
+            const popup = new DynamicPopup(
+                config,
+                (response) => {
+                    console.log('Popup completed:', response);
+                    displayResponse(response);
+                    return Promise.resolve();
+                },
+                () => {
+                    console.log('Popup dismissed');
+                }
+            );
+            
+            popup.render();
+        }
+        
+        // Required text field popup
+        function showRequiredTextFieldPopup() {
+            const config = {
+                id: 'required_text_field',
+                title: 'Required Text Field',
+                markdownContent: `
+# Required Text Field
+
+This field is required and must be filled.
+
+:::dc<textfield id="email" required label="Email" placeholder="Enter your email" />dc:::
+                `,
+                isBlocking: false
+            };
+            
+            const popup = new DynamicPopup(
+                config,
+                (response) => {
+                    console.log('Popup completed:', response);
+                    displayResponse(response);
+                    return Promise.resolve();
+                },
+                () => {
+                    console.log('Popup dismissed');
+                }
+            );
+            
+            popup.render();
+        }
+        
+        // Radio button popup
+        function showRadioButtonPopup() {
+            const config = {
+                id: 'radio_button',
+                title: 'Radio Button Example',
+                markdownContent: `
+# Radio Button Example
+
+Please select your satisfaction level.
+
+:::dc<radiobutton id="satisfaction" required label="Satisfaction">
+  <option id="very_satisfied">Very Satisfied</option>
+  <option id="satisfied">Satisfied</option>
+  <option id="neutral">Neutral</option>
+  <option id="dissatisfied">Dissatisfied</option>
+</radiobutton>dc:::
+                `,
+                isBlocking: false
+            };
+            
+            const popup = new DynamicPopup(
+                config,
+                (response) => {
+                    console.log('Popup completed:', response);
+                    displayResponse(response);
+                    return Promise.resolve();
+                },
+                () => {
+                    console.log('Popup dismissed');
+                }
+            );
+            
+            popup.render();
+        }
+        
+        // Checkbox popup
+        function showCheckboxPopup() {
+            const config = {
+                id: 'checkbox',
+                title: 'Checkbox Example',
+                markdownContent: `
+# Checkbox Example
+
+Select your interests.
+
+:::dc<checkbox id="interests" label="Interests">
+  <option id="tech">Technology</option>
+  <option id="sports">Sports</option>
+  <option id="music">Music</option>
+  <option id="travel">Travel</option>
+</checkbox>dc:::
+                `,
+                isBlocking: false
+            };
+            
+            const popup = new DynamicPopup(
+                config,
+                (response) => {
+                    console.log('Popup completed:', response);
+                    displayResponse(response);
+                    return Promise.resolve();
+                },
+                () => {
+                    console.log('Popup dismissed');
+                }
+            );
+            
+            popup.render();
+        }
+        
+        // Dropdown popup
+        function showDropdownPopup() {
+            const config = {
+                id: 'dropdown',
+                title: 'Dropdown Example',
+                markdownContent: `
+# Dropdown Example
+
+Please select your country.
+
+:::dc<dropdown id="country" required label="Country">
+  <option id="us">United States</option>
+  <option id="ca">Canada</option>
+  <option id="uk">United Kingdom</option>
+  <option id="au">Australia</option>
+</dropdown>dc:::
+                `,
+                isBlocking: false
+            };
+            
+            const popup = new DynamicPopup(
+                config,
+                (response) => {
+                    console.log('Popup completed:', response);
+                    displayResponse(response);
+                    return Promise.resolve();
+                },
+                () => {
+                    console.log('Popup dismissed');
+                }
+            );
+            
+            popup.render();
+        }
+        
+        // Text area popup
+        function showTextAreaPopup() {
+            const config = {
+                id: 'text_area',
+                title: 'Text Area Example',
+                markdownContent: `
+# Text Area Example
+
+Please share your feedback.
+
+:::dc<textarea id="feedback" label="Feedback" placeholder="Share your thoughts..." />dc:::
+                `,
+                isBlocking: false
+            };
+            
+            const popup = new DynamicPopup(
+                config,
+                (response) => {
+                    console.log('Popup completed:', response);
+                    displayResponse(response);
+                    return Promise.resolve();
+                },
+                () => {
+                    console.log('Popup dismissed');
+                }
+            );
+            
+            popup.render();
+        }
+        
+        // Complete survey popup
+        function showCompleteSurveyPopup() {
+            const config = {
+                id: 'complete_survey',
+                title: 'Customer Survey',
+                markdownContent: `
+# Customer Survey
+
+Thank you for taking our survey. Your feedback is important to us.
+
+:::dc<textfield id="name" required label="Full Name" placeholder="Enter your name" />dc:::
+
+:::dc<dropdown id="age" required label="Age Group">
+  <option id="18-25">18-25</option>
+  <option id="26-35">26-35</option>
+  <option id="36-45">36-45</option>
+  <option id="46+">46+</option>
+</dropdown>dc:::
+
+:::dc<radiobutton id="satisfaction" required label="How satisfied are you?">
+  <option id="very_satisfied">Very Satisfied</option>
+  <option id="satisfied">Satisfied</option>
+  <option id="neutral">Neutral</option>
+  <option id="dissatisfied">Dissatisfied</option>
+</radiobutton>dc:::
+
+:::dc<checkbox id="interests" label="Interests">
+  <option id="tech">Technology</option>
+  <option id="sports">Sports</option>
+  <option id="music">Music</option>
+  <option id="travel">Travel</option>
+</checkbox>dc:::
+
+:::dc<textarea id="comments" label="Additional Comments" placeholder="Any other thoughts?" />dc:::
+                `,
+                isBlocking: false
+            };
+            
+            const popup = new DynamicPopup(
+                config,
+                (response) => {
+                    console.log('Popup completed:', response);
+                    displayResponse(response);
+                    return Promise.resolve();
+                },
+                () => {
+                    console.log('Popup dismissed');
+                }
+            );
+            
+            popup.render();
+        }
+        
+        // Blocking survey popup
+        function showBlockingSurveyPopup() {
+            const config = {
+                id: 'blocking_survey',
+                title: 'Mandatory Survey',
+                markdownContent: `
+# Mandatory Survey
+
+This is a mandatory survey that must be completed.
+
+:::dc<textfield id="name" required label="Full Name" placeholder="Enter your name" />dc:::
+
+:::dc<radiobutton id="satisfaction" required label="How satisfied are you?">
+  <option id="very_satisfied">Very Satisfied</option>
+  <option id="satisfied">Satisfied</option>
+  <option id="neutral">Neutral</option>
+  <option id="dissatisfied">Dissatisfied</option>
+</radiobutton>dc:::
+                `,
+                isBlocking: true
+            };
+            
+            const popup = new DynamicPopup(
+                config,
+                (response) => {
+                    console.log('Popup completed:', response);
+                    displayResponse(response);
+                    return Promise.resolve();
+                },
+                () => {
+                    console.log('Popup dismissed');
+                }
+            );
+            
+            popup.render();
+        }
+    </script>
+</body>
+</html>
