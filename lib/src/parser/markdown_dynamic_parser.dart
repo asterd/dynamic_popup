@@ -4,7 +4,8 @@ import 'package:dynamic_popup/src/data/model/dynamic_component.dart';
 class MarkdownDynamicParser {
   // Updated pattern to support new syntax with improved initiator
   // This pattern now supports multiline syntax with spaces and newlines
-  static const String _componentPattern = r':::dc\s*<([a-zA-Z]+)([^>]*?)(\/?)>'; // Match opening tag with optional whitespace
+  static const String _componentPattern = r':::dc\s*<([a-zA-Z]+)([^>]*?)(\/?)?>';
+  static const String _conditionalPattern = r'<conditional\s+if="([^"]+)">';
   static const String _optionPattern = r'<option(?:\s+id="([^"]*)")?>([^<]+)<\/option>';
   
   /// Parse markdown content with extraction of dynamic components
@@ -45,6 +46,10 @@ class MarkdownDynamicParser {
           final attributes = candidate.match.group(2) ?? '';
           final isSelfClosing = candidate.match.group(3) == '/';
           
+          // Handle conditional attributes
+          Map<String, String> attributesMap = _extractAttributes(attributes);
+          print('Component attributes: $attributesMap');
+          
           List<OptionData>? options;
           int componentEndPos = candidate.endPosition;
           
@@ -53,7 +58,7 @@ class MarkdownDynamicParser {
             // Find the matching closing tag with dc::: suffix (allowing for whitespace)
             final searchStart = candidate.endPosition;
             final remainder = markdownContent.substring(searchStart);
-            final closeRegex = RegExp('<\\/$tagType>\\s*dc:::', multiLine: true);
+            final closeRegex = RegExp('</$tagType>\s*dc:::', multiLine: true);
             final closeMatch = closeRegex.firstMatch(remainder);
             
             if (closeMatch != null) {
@@ -78,14 +83,15 @@ class MarkdownDynamicParser {
           } else {
             // For self-closing components, we need to account for the dc::: suffix with possible whitespace
             // Check if the component ends with dc::: allowing for whitespace
-            final fullComponentPattern = RegExp('${RegExp.escape(fullMatch)}\\s*dc:::', multiLine: true);
+            final fullComponentPattern = RegExp('${RegExp.escape(fullMatch)}\s*dc:::', multiLine: true);
             final fullMatchResult = fullComponentPattern.firstMatch(markdownContent.substring(position));
             if (fullMatchResult != null) {
               componentEndPos = position + fullMatchResult.end;
             }
           }
           
-          component = DynamicComponent.fromHtmlTag(tagType, attributes, options);
+          print('Creating component with tagType: $tagType, attributes: $attributesMap');
+          component = DynamicComponent.fromHtmlTag(tagType, attributesMap, options);
           position = componentEndPos;
           
           components.add(component);
@@ -154,6 +160,32 @@ class MarkdownDynamicParser {
     return html;
   }
   
+  /// Extracts attributes from a component tag
+  static Map<String, String> _extractAttributes(String attributesString) {
+    final attributes = <String, String>{};
+    
+    // Pattern for attributes with quoted values and boolean attributes
+    final attributeRegex = RegExp(r'([a-zA-Z_][a-zA-Z0-9_-]*)(?:=(?:"([^"]*)"|([^\s>"]+)))?');
+    final matches = attributeRegex.allMatches(attributesString);
+    
+    for (final match in matches) {
+      final name = match.group(1)!;
+      // Check for quoted values, unquoted values, or use default 'true' for boolean attributes
+      final value = match.group(2) ?? match.group(3) ?? 'true';
+      
+      attributes[name] = value;
+    }
+    
+    // Handle conditional attributes
+    if (attributes.containsKey('depends-on') && attributes.containsKey('when-value')) {
+      // Non creare un attributo conditionalLogic come stringa JSON, gli attributi depends-on e when-value
+      // verranno utilizzati direttamente nel metodo fromHtmlTag della classe DynamicComponent
+      print('Found conditional attributes: depends-on=${attributes['depends-on']}, when-value=${attributes['when-value']}');
+    }
+
+    return attributes;
+  }
+  
   /// Extract all placeholders from markdown text
   static List<String> extractPlaceholders(String markdownContent) {
     final newRegex = RegExp(_componentPattern, caseSensitive: false, multiLine: true);
@@ -172,67 +204,5 @@ class MarkdownDynamicParser {
     } catch (e) {
       return false;
     }
-  }
-  
-  /// Generate HTML preview for testing
-  static String generatePreviewHtml(String markdownContent) {
-    final parsed = parse(markdownContent);
-    final htmlParts = <String>[];
-    
-    // Build HTML following the content flow
-    for (final element in parsed.contentFlow) {
-      switch (element.type) {
-        case ContentType.markdown:
-          if (element.markdownContent != null && element.markdownContent!.trim().isNotEmpty) {
-            htmlParts.add(markdownToHtml(element.markdownContent!));
-          }
-          break;
-          
-        case ContentType.component:
-          if (element.component != null) {
-            htmlParts.add(_generateComponentPreviewHtml(element.component!));
-          }
-          break;
-      }
-    }
-    
-    final combinedHtml = htmlParts.join('\n');
-    
-    return '''
-<!DOCTYPE html>
-<html>
-<head>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    .component { border: 1px solid #ccc; padding: 10px; margin: 10px 0; border-radius: 5px; }
-    .component-label { font-weight: bold; color: #333; }
-    .component-type { color: #666; font-size: 0.9em; }
-    .component-required { color: red; }
-  </style>
-</head>
-<body>
-  $combinedHtml
-</body>
-</html>
-''';
-  }
-  
-  /// Generate HTML preview for a component
-  static String _generateComponentPreviewHtml(DynamicComponent component) {
-    final requiredMark = component.isRequired ? '<span class="component-required"> *</span>' : '';
-    final optionsHtml = component.optionData != null 
-        ? component.optionData!.map((o) => '<li>${o.text}${o.id != null ? ' (ID: ${o.id})' : ''}</li>').join('')
-        : component.options != null 
-            ? component.options!.map((o) => '<li>$o</li>').join('')
-            : '';
-    
-    return '''
-<div class="component">
-  <div class="component-label">${component.label}$requiredMark</div>
-  <div class="component-type">${component.type.name} (ID: ${component.id})</div>
-  ${optionsHtml.isNotEmpty ? '<ul>$optionsHtml</ul>' : ''}
-  ${component.placeholder != null ? '<div>Placeholder: ${component.placeholder}</div>' : ''}
-</div>
-''';
   }
 }

@@ -1,3 +1,34 @@
+## [1.0.7] - 2025-10-09
+
+### Added
+- **Enhanced Conditional Logic System**:
+  - New `required-when-value` attribute to control required status based on another field's specific value
+  - Support for three-tier conditional logic priority:
+    1. `required-when-value` (highest priority) - Controls required status based on dependent field value
+    2. `required-when-visible` (medium priority) - Controls required status based on visibility
+    3. Default `required` attribute (lowest priority) - Static required status
+  - Components can now be always visible but dynamically required based on other field values
+  - Case-insensitive conditional logic evaluation for better user experience
+- **Improved UI Feedback**:
+  - Dynamic asterisk indicator that updates in real-time based on current required status
+  - Visual required status changes are immediately reflected in all form components
+- **Example App Enhancements**:
+  - Separate, clear examples demonstrating both conditional visibility and conditional required status
+  - Distinct use cases with different controller fields to avoid confusion
+  - Comprehensive demonstration of all conditional logic features
+
+### Changed
+- **Conditional Logic Implementation**:
+  - Refactored conditional logic evaluation to properly handle visibility vs required status
+  - Fixed issue where `required-when-value` was not correctly evaluated against dependent field values
+  - Improved component factory to correctly propagate dynamic required status to UI components
+- **Component Rendering**:
+  - Components now rebuild with updated required status when dependent fields change
+  - Dynamic required status is properly passed from widget to individual components
+- **Documentation**:
+  - Comprehensive documentation for all conditional logic features and attributes
+  - Clear examples showing proper usage of `depends-on`, `when-value`, `required-when-value`, and `required-when-visible`
+
 ## [1.0.6]
 
 ### Changed
@@ -18,73 +49,14 @@
 
 ## [1.0.4]
 
+### Added
+- Support for conditional required status in addition to conditional visibility
+- New `required-when-visible` attribute for components to control required status based on visibility
+- Case-insensitive conditional logic evaluation for better user experience
+- Comprehensive documentation for conditional logic features
+- New examples demonstrating both conditional visibility and conditional required status
+
 ### Fixed
 - Fixed issue where `showOnce` popups would reappear after being completed or dismissed
 - Enhanced form validation feedback with both local component and global popup highlighting
 - Fixed popup state persistence by implementing proper loading from local storage
-
-## [1.0.3]
-
-### Added
-- Support for option IDs in radio buttons, checkboxes, and dropdowns
-- Smart scrolling for long content in popups
-- Support for multiline syntax with newlines and spaces in component definitions
-- Custom slots support for titles, footers, and action buttons
-- Dedicated examples/documentation screen in the example app
-- View Markdown button in example popups
-
-### Changed
-- Improved markdown syntax from positional parameters to HTML-like syntax
-- Updated component initiator from `:::` to `:::dc<component>dc:::` for better identification
-- Removed support for old positional parameter syntax
-- Updated all examples to use new HTML-like syntax with option IDs
-- Enhanced UI components to send option IDs instead of text values in responses
-- Consolidated test interface into main example screen
-- Improved dialog dismissal handling to prevent overlay issues
-
-### Fixed
-- Ensured option IDs are properly used in popup responses instead of text values
-- Fixed overlay persistence issue when dismissing non-required popups
-
-## 1.0.2
-
-- Removed http dependency from core library (moved to example project only)
-- Removed unused DefaultDynamicPopupRepository from core library
-- Added .pubignore file to prevent publishing unnecessary files
-- Added LICENSE file with MIT license
-- Added CONTRIBUTING.md with contribution guidelines
-- Added CODE_OF_CONDUCT.md with community standards
-- Fixed flutter analyze issues:
-  - Removed unused local variable in dynamic_popup_service.dart
-  - Removed unnecessary imports in dynamic_popup_widget.dart
-  - Updated deprecated onPopInvoked to onPopInvokedWithResult
-  - Updated deprecated value parameter to initialValue in dropdown
-- Updated documentation to clarify dependency requirements
-- Improved package structure for pub.dev publishing
-
-## 1.0.1
-
-- Simplified repository pattern by reducing required methods from 7 to 3
-- Removed complex optional methods (markPopupAsShown, markPopupAsDismissed) for easier implementation
-- Streamlined example code by removing redundant buttons and simplifying demonstrations
-- Improved documentation with clearer, more concise instructions
-- Added JSON logging in example apps for better debugging of popup responses
-- Enhanced snackbar colors in examples for better readability and user experience
-- Fixed undefined variable error in API integration example
-- Removed unnecessary http dependency from core library (now only in example)
-- Removed unused DefaultDynamicPopupRepository from core library
-- Maintained all core functionality while reducing complexity
-
-## 1.0.0
-
-- Initial release of the dynamic popup system
-- Support for configurable popups from backend APIs
-- Markdown parser with dynamic component placeholders
-- Interactive UI components: RadioButton, Checkbox, TextArea, TextField, Dropdown
-- Automatic validation of required fields
-- Persistent state management (show once, completed/dismissed)
-- Support for both blocking and non-blocking popup behaviors
-- Smooth animations and modern design
-- Offline support with local storage
-- Comprehensive test page for validation
-- Detailed documentation and examples

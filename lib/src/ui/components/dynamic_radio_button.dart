@@ -44,7 +44,7 @@ class _DynamicRadioButtonState extends State<DynamicRadioButton> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Label
+          // Label with dynamic required indicator
           RichText(
             text: TextSpan(
               children: [

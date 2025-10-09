@@ -111,6 +111,16 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               const SizedBox(height: 12),
               
+              // Conditional Logic Popup
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => _showConditionalLogicPopup(context),
+                  child: const Text('Conditional Logic Popup'),
+                ),
+              ),
+              const SizedBox(height: 12),
+              
               // Popup from API (mock)
               SizedBox(
                 width: double.infinity,
@@ -698,6 +708,118 @@ This popup simulates content from an API.
         backgroundColor: Colors.orange,
         behavior: SnackBarBehavior.floating,
       ),
+    );
+  }
+
+  void _showConditionalLogicPopup(BuildContext context) {
+    // Store the context in a local variable to ensure it's still valid
+    final currentContext = context;
+    
+    final markdownContent = '''
+# PROCEDURA PER LA GESTIONE DEGLI EVENTI "FRIENDS & FAMILY"
+
+Nel quadro del modello di Modello di Organizzazione, Gestione e Controllo adottato dalla nostra Società ai sensi del D.lgs. 231/2001, pubblichiamo questa procedura.
+
+## Informazioni Personali
+
+Lei o i suoi familiari ha / hanno attualmente un incarico nella Pubblica Amministrazione o ricopre / ricoprono attualmente funzioni all'interno di Istituzioni Pubbliche?
+
+:::dc<radiobutton id="public_role" required label="Ruolo pubblico:">
+  <option id="SI">SI</option>
+  <option id="NO">NO</option>
+</radiobutton>dc:::
+
+## Esempio 1: Campo con visibilità condizionale
+
+I seguenti campi sono visibili solo se si seleziona "SI" nella domanda sopra:
+
+:::dc<textfield id="role_details" label="Grado di parentela/affinità:" placeholder="" depends-on="public_role" when-value="SI" required />dc:::
+
+:::dc<dropdown id="relationship_type" label="Tipologia di relazione:" depends-on="public_role" when-value="SI" required>
+  <option id="family">Grado di parentela/affinità</option>
+  <option id="public_admin">Pubblica Amministrazione e/o Istituzione Pubblica</option>
+</dropdown>dc:::
+
+:::dc<textfield id="institution_name" label="Pubblica Amministrazione e/o Istituzione Pubblica:" placeholder="" depends-on="public_role" when-value="SI" />dc:::
+
+## Esempio 2: Campo con obbligatorietà condizionale
+
+Il seguente campo è sempre visibile, ma diventa obbligatorio solo se si seleziona "SI" nella domanda qui sotto:
+
+:::dc<radiobutton id="additional_info_needed" required label="Hai informazioni aggiuntive da fornire?">
+  <option id="SI">SI</option>
+  <option id="NO">NO</option>
+</radiobutton>dc:::
+
+:::dc<textfield id="additional_info" label="Informazioni aggiuntive:" placeholder="Fornisci ulteriori dettagli" depends-on="additional_info_needed" required-when-value="SI" />dc:::''';
+    
+    final config = PopupConfig(
+      id: 'conditional_logic_example',
+      title: 'Procedura Friends & Family',
+      markdownContent: markdownContent,
+      isBlocking: true,
+      showOnce: false, // For testing, allow multiple shows
+    );
+
+    showDialog(
+      context: currentContext,
+      builder: (BuildContext context) {
+        return DynamicPopupWidget(
+          config: config,
+          customActions: [
+            TextButton(
+              onPressed: () {
+                // Show the markdown content in a dialog
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text('Markdown Content'),
+                      content: SingleChildScrollView(
+                        child: Text(markdownContent),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('Close'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              child: const Text('View Markdown'),
+            ),
+          ],
+          onCompleted: (response) {
+            // Check if the context is still mounted before showing snackbar
+            if (!context.mounted) return;
+            
+            // Log the response JSON to console
+            print('Popup response JSON: ${jsonEncode(response.toJson())}');
+            
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Response: ${response.responses}'),
+                backgroundColor: Colors.green,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          },
+          onDismissed: () {
+            // Check if the context is still mounted before showing snackbar
+            if (!context.mounted) return;
+            
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Popup was dismissed'),
+                backgroundColor: Colors.grey,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

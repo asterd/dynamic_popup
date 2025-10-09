@@ -14,39 +14,43 @@ class DynamicComponentFactory {
     required Function(String componentId, dynamic value) onChanged,
     dynamic initialValue,
     bool hasError = false,
+    bool isRequired = false, // Add dynamic required status parameter
   }) {
-    switch (component.type) {
+    // Create a copy of the component with the dynamic required status
+    final dynamicComponent = component.copyWith(isRequired: isRequired);
+        
+    switch (dynamicComponent.type) {
       case DynamicComponentType.radioButton:
         return DynamicRadioButton(
-          component: component,
+          component: dynamicComponent,
           onChanged: onChanged,
           initialValue: initialValue,
           hasError: hasError,
         );
       case DynamicComponentType.checkbox:
         return DynamicCheckbox(
-          component: component,
+          component: dynamicComponent,
           onChanged: onChanged,
           initialValue: initialValue,
           hasError: hasError,
         );
       case DynamicComponentType.textArea:
         return DynamicTextArea(
-          component: component,
+          component: dynamicComponent,
           onChanged: onChanged,
           initialValue: initialValue,
           hasError: hasError,
         );
       case DynamicComponentType.textField:
         return DynamicTextField(
-          component: component,
+          component: dynamicComponent,
           onChanged: onChanged,
           initialValue: initialValue,
           hasError: hasError,
         );
       case DynamicComponentType.dropdown:
         return DynamicDropdown(
-          component: component,
+          component: dynamicComponent,
           onChanged: onChanged,
           initialValue: initialValue,
           hasError: hasError,

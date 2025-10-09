@@ -68,11 +68,20 @@ class _DynamicPopupWidgetState extends State<DynamicPopupWidget>
   }
 
   void _initializeResponses() {
+    print('Initializing responses for ${_parsedContent.components.length} components');
     for (final component in _parsedContent.components) {
+      print('Component ${component.id}, type: ${component.type}, conditionalLogic: ${component.conditionalLogic != null}');
+      if (component.conditionalLogic != null) {
+        print('  - Depends on: ${component.conditionalLogic!.dependsOn}, condition: ${component.conditionalLogic!.condition}, value: ${component.conditionalLogic!.value}');
+      }
+      
       _responses[component.id] = DynamicComponentFactory.getDefaultValue(component);
       _componentErrors[component.id] = false;
       _componentKeys[component.id] = GlobalKey(); // Initialize keys for all components
     }
+    
+    // After initializing all responses, update conditional visibility
+    _updateConditionalVisibility();
   }
 
   @override
@@ -81,28 +90,151 @@ class _DynamicPopupWidgetState extends State<DynamicPopupWidget>
     super.dispose();
   }
 
+  // Track which components are currently visible based on conditional logic
+  final Map<String, bool> _componentVisibility = {};
+  
   void _handleComponentChange(String componentId, dynamic value) {
+    print('Component changed: $componentId, value: $value, type: ${value.runtimeType}');
     setState(() {
       _responses[componentId] = value;
       _componentErrors[componentId] = false; // Clear error when user interacts
       // Clear global validation error state when user interacts
       _hasValidationErrors = false;
       _firstInvalidComponentId = null;
+      
+      // Update conditional visibility when a component value changes
+      _updateConditionalVisibility();
+      
+      // Debug print to see all responses after update
+      print('All responses after update: $_responses');
     });
   }
-
+  
+  // Check if a component should be visible based on conditional logic
+  bool _isComponentVisible(DynamicComponent component) {
+    // If no conditional logic is defined, the component is always visible
+    if (component.conditionalLogic == null) {
+      return true;
+    }
+    
+    final logic = component.conditionalLogic!;
+    
+    // If no visibility value is defined, the component is always visible
+    if (logic.value == null) {
+      return true;
+    }
+    
+    // Get the value of the component this one depends on
+    final dependentValue = _responses[logic.dependsOn];
+    
+    // If the dependent component doesn't have a value yet, hide this component
+    if (dependentValue == null) {
+      print('Component ${component.id}: dependent value is null, hiding component');
+      return false;
+    }
+    
+    // Debug print to see the actual values
+    print('Component ${component.id}: checking visibility condition: ${logic.dependsOn} value: "$dependentValue" (${dependentValue.runtimeType}), expected: "${logic.value}" (${logic.value.runtimeType})');
+    
+    // Check if the visibility condition is met
+    final result = logic.isVisibilityMet(dependentValue);
+    print('  - visibility condition result: $result');
+    return result;
+  }
+  
+  // Check if a component should be required based on conditional logic
+  bool _isComponentRequired(DynamicComponent component) {
+    // If no conditional logic is defined, use the component's default required status
+    if (component.conditionalLogic == null) {
+      return component.isRequired;
+    }
+    
+    final logic = component.conditionalLogic!;
+    
+    // Check requiredWhenValue (highest priority)
+    if (logic.requiredWhenValue != null) {
+      // Get the value of the component this depends on
+      final dependentValue = _responses[logic.dependsOn];
+      
+      print('Checking requiredWhenValue for component ${component.id}: dependentValue=$dependentValue, requiredWhenValue=${logic.requiredWhenValue}, isRequiredMet=${dependentValue != null && logic.isRequiredMet(dependentValue)}');
+      
+      // Check if the required condition is met
+      if (dependentValue != null && logic.isRequiredMet(dependentValue)) {
+        return true; // The field is required when the condition is met
+      }
+      
+      // If the condition is not met, return the component's default required status
+      return component.isRequired;
+    }
+    
+    // If no conditional required logic is defined, use the component's default required status
+    return component.isRequired;
+  }
+  
+  // Update visibility of all components based on conditional logic
+  void _updateConditionalVisibility() {
+    print('Updating conditional visibility');
+    // First pass: determine visibility for all components
+    for (final component in _parsedContent.components) {
+      if (component.conditionalLogic != null) {
+        final isVisible = _isComponentVisible(component);
+        print('Component ${component.id} with conditional logic depends on ${component.conditionalLogic!.dependsOn}, condition: ${component.conditionalLogic!.condition}, value: ${component.conditionalLogic!.value}, isVisible: $isVisible');
+        _componentVisibility[component.id] = isVisible;
+      } else {
+        // Components without conditional logic are always visible
+        _componentVisibility[component.id] = true;
+      }
+    }
+    print('Component visibility after update: $_componentVisibility');
+  }
+  
+  // Check if a component should be visible by ID
+  bool _isComponentVisibleById(String componentId) {
+    return _componentVisibility[componentId] ?? true;
+  }
+  
   bool _validateForm() {
     bool isValid = true;
     final newErrors = <String, bool>{};
     String? firstInvalidId;
 
     for (final component in _parsedContent.components) {
+      // Skip validation for hidden components if disableWhenHidden is true
+      final isVisible = _isComponentVisibleById(component.id);
+      final skipValidation = !isVisible && 
+          component.conditionalLogic?.disableWhenHidden == true;
+      
+      if (skipValidation) {
+        newErrors[component.id] = false;
+        continue;
+      }
+      
       final value = _responses[component.id];
-      final isComponentValid = DynamicComponentFactory.validateComponent(component, value);
+      
+      // Create a temporary component with the correct required status based on conditional logic
+      final isRequired = _isComponentRequired(component);
+      final tempComponent = DynamicComponent(
+        id: component.id,
+        type: component.type,
+        label: component.label,
+        isRequired: isRequired,
+        options: component.options,
+        optionData: component.optionData,
+        placeholder: component.placeholder,
+        defaultValue: component.defaultValue,
+        maxLength: component.maxLength,
+        minLines: component.minLines,
+        maxLines: component.maxLines,
+        validation: component.validation,
+        metadata: component.metadata,
+        conditionalLogic: component.conditionalLogic,
+      );
+      
+      final isComponentValid = DynamicComponentFactory.validateComponent(tempComponent, value);
       newErrors[component.id] = !isComponentValid;
       
-      if (!isComponentValid && firstInvalidId == null) {
-        firstInvalidId = component.id; // Track the first invalid component
+      if (!isComponentValid && firstInvalidId == null && isVisible) {
+        firstInvalidId = component.id; // Track the first invalid visible component
       }
       
       if (!isComponentValid) {
@@ -385,6 +517,16 @@ class _DynamicPopupWidgetState extends State<DynamicPopupWidget>
   }
 
   Widget _buildComponent(DynamicComponent component) {
+    final isVisible = _isComponentVisibleById(component.id);
+    
+    // If component is not visible, return an empty container
+    if (!isVisible) {
+      return Container(); // Hidden component
+    }
+    
+    // Determine if the component is required based on conditional logic
+    final isRequired = _isComponentRequired(component);
+    
     return KeyedSubtree(
       key: _componentKeys[component.id],
       child: DynamicComponentFactory.createComponent(
@@ -392,6 +534,7 @@ class _DynamicPopupWidgetState extends State<DynamicPopupWidget>
         onChanged: _handleComponentChange,
         initialValue: _responses[component.id],
         hasError: _componentErrors[component.id] ?? false,
+        isRequired: isRequired, // Pass dynamic required status
       ),
     );
   }

@@ -2,6 +2,18 @@
 
 A flexible and customizable dynamic popup system for Flutter with markdown support and interactive components.
 
+## 📚 Table of Contents
+
+- [Features](#features)
+- [Installation](#-installation)
+- [Popup Types](#-popup-types)
+- [Supported Components](#-supported-components)
+- [Placeholder Syntax](#-placeholder-syntax)
+- [Usage](#-usage)
+- [Conditional Logic](#-conditional-logic)
+- [Data Usage (Optional)](#data-usage-optional)
+- [Support](#-support)
+
 ## Features
 
 - **Configurable popups** from backend APIs
@@ -15,19 +27,21 @@ A flexible and customizable dynamic popup system for Flutter with markdown suppo
 - **Minimal API requirements** - only two endpoints required
 - **Custom slots support** - add custom titles, footers, and action buttons
 - **Smart scrolling** - automatically shows scroll buttons for long content
+- **Advanced conditional logic** - show/hide fields or change required status based on other field values with three-tier priority system
+- **Dynamic required indicators** - real-time asterisk updates based on conditional logic
 
 ## 🚀 Installation
 
 Add this to your package's pubspec.yaml file:
 
-```yaml
+```
 dependencies:
-  dynamic_popup: ^1.0.3
+  dynamic_popup: ^1.0.7
 ```
 
 Then run:
 
-```bash
+```
 flutter pub get
 ```
 
@@ -221,7 +235,7 @@ showDialog(
 
 ### Manual Popup Display
 
-```dart
+``dart
 // Test specific component
 final config = PopupConfig(
   id: 'test_popup',
@@ -277,7 +291,7 @@ class MySimplePopupRepository extends BaseDynamicPopupRepository {
 
 ### 2. Direct Usage Without Service
 
-```dart
+```
 // Fetch popup config from your API directly
 final popupConfig = await MyApiService.getPopupForScreen('home_screen');
 
@@ -440,6 +454,15 @@ case DynamicComponentType.newType:
 
 ## 📝 Changelog
 
+### [1.0.4] - 2025-10-09
+
+### Added
+- Support for conditional required status in addition to conditional visibility
+- New `required-when-visible` attribute for components to control required status based on visibility
+- Case-insensitive conditional logic evaluation for better user experience
+- Comprehensive documentation for conditional logic features
+- New examples demonstrating both conditional visibility and conditional required status
+
 ### [1.0.3] - 2025-09-29
 
 ### Added
@@ -504,3 +527,73 @@ case DynamicComponentType.newType:
 ## 📞 Support
 
 For questions or issues with the dynamic popup system, please open an issue on GitHub.
+
+## 🔄 Conditional Logic
+
+Dynamic Popup supports conditional logic to show/hide fields or change their required status based on other field values.
+
+### Conditional Visibility
+
+Fields can be shown or hidden based on the value of another field:
+
+```
+:::dc<radiobutton id="consent" required label="Do you consent?">
+  <option id="yes">Yes</option>
+  <option id="no">No</option>
+</radiobutton>dc:::
+
+:::dc<textfield id="reason" label="Reason for consent" depends-on="consent" when-value="yes" />dc:::
+```
+
+In this example, the "reason" text field will only be visible when the "consent" radio button has the value "yes".
+
+### Conditional Required Status
+
+Fields can change their required status based on the value of another field:
+
+#### Required When Visible
+```
+:::dc<radiobutton id="employment" required label="Are you employed?">
+  <option id="yes">Yes</option>
+  <option id="no">No</option>
+</radiobutton>dc:::
+
+:::dc<textfield id="employer" label="Employer Name" required-when-visible="true" depends-on="employment" when-value="yes" />dc:::
+```
+
+In this example, the "employer" text field is always visible but becomes required only when the "employment" radio button has the value "yes".
+
+#### Required When Value
+```
+:::dc<radiobutton id="info_needed" required label="Do you have additional information?">
+  <option id="yes">Yes</option>
+  <option id="no">No</option>
+</radiobutton>dc:::
+
+:::dc<textfield id="additional_info" label="Additional Information" depends-on="info_needed" required-when-value="yes" />dc:::
+```
+
+In this example, the "additional_info" text field is always visible but becomes required only when the "info_needed" radio button has the value "yes", regardless of its visibility.
+
+### Available Conditional Attributes
+
+- `depends-on`: The ID of the component this field depends on
+- `when-value`: The value that triggers the visibility condition
+- `required-when-visible`: Whether the field should be required when visible (`true`/`false`)
+- `required-when-value`: The value of the depends-on field that makes this field required (instead of a boolean flag)
+- `condition`: The type of condition to check (default: `equals`)
+- `disable-when-hidden`: Whether to disable validation when hidden (default: `true`)
+
+### Supported Conditions
+
+- `equals`: Field value equals the specified value (default)
+- `notEquals`: Field value does not equal the specified value
+- `contains`: Field value contains the specified value (for list values like checkboxes)
+- `notContains`: Field value does not contain the specified value (for list values like checkboxes)
+
+### Priority Order
+
+When multiple conditional required attributes are specified, they are evaluated in this order:
+1. `required-when-value` (highest priority)
+2. `required-when-visible` (medium priority)
+3. Component's default `required` attribute (lowest priority)

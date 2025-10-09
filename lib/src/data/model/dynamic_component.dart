@@ -69,6 +69,7 @@ class DynamicComponent {
   final int? maxLines;
   final Map<String, dynamic>? validation;
   final Map<String, dynamic>? metadata;
+  final ConditionalLogic? conditionalLogic; // For conditional display/validation
 
   DynamicComponent({
     required this.id,
@@ -84,7 +85,43 @@ class DynamicComponent {
     this.maxLines,
     this.validation,
     this.metadata,
+    this.conditionalLogic,
   });
+
+  // Add copyWith method for creating modified copies of the component
+  DynamicComponent copyWith({
+    String? id,
+    DynamicComponentType? type,
+    String? label,
+    bool? isRequired,
+    List<String>? options,
+    List<OptionData>? optionData,
+    String? placeholder,
+    String? defaultValue,
+    int? maxLength,
+    int? minLines,
+    int? maxLines,
+    Map<String, dynamic>? validation,
+    Map<String, dynamic>? metadata,
+    ConditionalLogic? conditionalLogic,
+  }) {
+    return DynamicComponent(
+      id: id ?? this.id,
+      type: type ?? this.type,
+      label: label ?? this.label,
+      isRequired: isRequired ?? this.isRequired,
+      options: options ?? this.options,
+      optionData: optionData ?? this.optionData,
+      placeholder: placeholder ?? this.placeholder,
+      defaultValue: defaultValue ?? this.defaultValue,
+      maxLength: maxLength ?? this.maxLength,
+      minLines: minLines ?? this.minLines,
+      maxLines: maxLines ?? this.maxLines,
+      validation: validation ?? this.validation,
+      metadata: metadata ?? this.metadata,
+      conditionalLogic: conditionalLogic ?? this.conditionalLogic,
+    );
+  }
 
   // Comment out or remove the old factory method since we no longer support the old syntax
   /*
@@ -143,23 +180,49 @@ class DynamicComponent {
   */
 
   // New factory method to create components from HTML-like tags
-  factory DynamicComponent.fromHtmlTag(String tagType, String attributes, List<OptionData>? options) {
-    // Parse attributes from the format: key="value" key2="value2" or boolean attributes like "required"
-    final attributeMap = <String, String>{};
-    final attrRegex = RegExp(r'(\w+)="([^"]*)"');
-    
-    // First parse key="value" attributes
-    for (final match in attrRegex.allMatches(attributes)) {
-      attributeMap[match.group(1)!] = match.group(2)!;
-    }
-    
-    // Then check for boolean attributes (present without values)
-    final required = attributes.contains('required');
+  factory DynamicComponent.fromHtmlTag(String tagType, Map<String, String> attributeMap, List<OptionData>? options) {
+    // The attributeMap is already parsed, so we can use it directly
+    final required = attributeMap.containsKey('required');
     
     final id = attributeMap['id'] ?? 'component_${DateTime.now().millisecondsSinceEpoch}';
     final label = attributeMap['label'] ?? 'Field';
     final placeholder = attributeMap['placeholder'];
     final defaultValue = attributeMap['default'];
+    
+    // Parse conditional logic if present
+    ConditionalLogic? conditionalLogic;
+    print('Checking for conditional logic. Attribute map keys: ${attributeMap.keys}');
+    if (attributeMap.containsKey('depends-on')) {
+      print('Creating ConditionalLogic for component with id: ${attributeMap['id']}, depends-on: ${attributeMap['depends-on']}');
+      
+      // Parse visibility condition (when-value or visible-when-value)
+      String? visibilityValue;
+      if (attributeMap.containsKey('when-value')) {
+        visibilityValue = attributeMap['when-value'];
+      } else if (attributeMap.containsKey('visible-when-value')) {
+        visibilityValue = attributeMap['visible-when-value'];
+      }
+      
+      // Parse required-when-value attribute (this is the value that makes the field required)
+      String? requiredWhenValue;
+      if (attributeMap.containsKey('required-when-value')) {
+        requiredWhenValue = attributeMap['required-when-value'];
+      }
+      
+      // Create conditional logic
+      conditionalLogic = ConditionalLogic(
+        dependsOn: attributeMap['depends-on']!,
+        condition: attributeMap['condition'] ?? 'equals',
+        value: visibilityValue, // Use visibility value for visibility checks
+        disableWhenHidden: attributeMap['disable-when-hidden'] != 'false',
+        requiredWhenVisible: null, // Not used anymore
+        requiredWhenValue: requiredWhenValue, // The value that makes the field required
+      );
+      
+      print('Created ConditionalLogic: $conditionalLogic');
+    } else {
+      print('No conditional logic for component with id: ${attributeMap['id']}');
+    }
     
     DynamicComponentType type;
     switch (tagType.toLowerCase()) {
@@ -196,6 +259,7 @@ class DynamicComponent {
       defaultValue: defaultValue,
       maxLines: type == DynamicComponentType.textArea ? 4 : 1,
       minLines: type == DynamicComponentType.textArea ? 2 : 1,
+      conditionalLogic: conditionalLogic,
     );
   }
 
@@ -214,6 +278,7 @@ class DynamicComponent {
       'maxLines': maxLines,
       'validation': validation,
       'metadata': metadata,
+      'conditionalLogic': conditionalLogic?.toJson(),
     };
   }
 }
@@ -227,4 +292,100 @@ class OptionData {
   
   @override
   String toString() => id != null ? '$text|$id' : text;
+}
+
+// Class for conditional logic between components
+class ConditionalLogic {
+  final String dependsOn; // ID of the component this depends on
+  final String? condition; // Condition type (equals, notEquals, contains, etc.)
+  final dynamic value; // Value to compare against for visibility
+  final bool disableWhenHidden; // Whether to disable validation when hidden
+  final bool? requiredWhenVisible; // Whether the component should be required when visible (null means use component's default)
+  final String? requiredWhenValue; // The value of the dependsOn field that makes this component required (null means not conditional)
+  
+  ConditionalLogic({
+    required this.dependsOn,
+    this.condition = 'equals',
+    required this.value,
+    this.disableWhenHidden = true,
+    this.requiredWhenVisible,
+    this.requiredWhenValue,
+  });
+  
+  @override
+  String toString() {
+    return 'ConditionalLogic{dependsOn: $dependsOn, condition: $condition, value: $value, disableWhenHidden: $disableWhenHidden, requiredWhenVisible: $requiredWhenVisible, requiredWhenValue: $requiredWhenValue}';
+  }
+  
+  // Check if the visibility condition is met
+  bool isVisibilityMet(dynamic dependentValue) {
+    // If value is null, this means no visibility condition was set, so return true (always visible)
+    if (value == null) return true;
+    
+    if (dependentValue == null) return false;
+    
+    switch (condition) {
+      case 'equals':
+        return dependentValue.toString().toLowerCase() == value.toString().toLowerCase();
+      case 'notEquals':
+        return dependentValue.toString().toLowerCase() != value.toString().toLowerCase();
+      case 'contains':
+        if (dependentValue is List) {
+          return dependentValue.any((item) => item.toString().toLowerCase() == value.toString().toLowerCase());
+        } else {
+          return dependentValue.toString().contains(value.toString());
+        }
+      case 'notContains':
+        if (dependentValue is List) {
+          return !dependentValue.any((item) => item.toString().toLowerCase() == value.toString().toLowerCase());
+        } else {
+          return !dependentValue.toString().contains(value.toString());
+        }
+      default:
+        // Default to equals condition
+        return dependentValue.toString().toLowerCase() == value.toString().toLowerCase();
+    }
+  }
+  
+  // Check if the required condition is met
+  bool isRequiredMet(dynamic dependentValue) {
+    // If requiredWhenValue is null, this means no required condition was set
+    if (requiredWhenValue == null) return false;
+    
+    if (dependentValue == null) return false;
+    
+    // Check if the dependent value matches the requiredWhenValue
+    switch (condition) {
+      case 'equals':
+        return dependentValue.toString().toLowerCase() == requiredWhenValue.toString().toLowerCase();
+      case 'notEquals':
+        return dependentValue.toString().toLowerCase() != requiredWhenValue.toString().toLowerCase();
+      case 'contains':
+        if (dependentValue is List) {
+          return dependentValue.any((item) => item.toString().toLowerCase() == requiredWhenValue.toString().toLowerCase());
+        } else {
+          return dependentValue.toString().contains(requiredWhenValue.toString());
+        }
+      case 'notContains':
+        if (dependentValue is List) {
+          return !dependentValue.any((item) => item.toString().toLowerCase() == requiredWhenValue.toString().toLowerCase());
+        } else {
+          return !dependentValue.toString().contains(requiredWhenValue.toString());
+        }
+      default:
+        // Default to equals condition
+        return dependentValue.toString().toLowerCase() == requiredWhenValue.toString().toLowerCase();
+    }
+  }
+  
+  Map<String, dynamic> toJson() {
+    return {
+      'dependsOn': dependsOn,
+      'condition': condition,
+      'value': value,
+      'disableWhenHidden': disableWhenHidden,
+      'requiredWhenVisible': requiredWhenVisible,
+      'requiredWhenValue': requiredWhenValue,
+    };
+  }
 }
