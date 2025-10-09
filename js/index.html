@@ -73,6 +73,14 @@
             background-color: #616161;
         }
         
+        .btn-success {
+            background-color: #388e3c;
+        }
+        
+        .btn-success:hover {
+            background-color: #2e7d32;
+        }
+        
         .response-output {
             background-color: #e8f5e9;
             border: 1px solid #c8e6c9;
@@ -105,7 +113,7 @@
             <div class="code-block">
 :::dc&lt;textfield id="name" label="Your Name" placeholder="Enter your name" /&gt;dc:::
             </div>
-            <button class="btn" onclick="showSimpleTextFieldPopup()">Show Popup</button>
+            <button class="btn" onclick="examples.showSimpleTextField()">Show Popup</button>
         </div>
         
         <div class="example-section">
@@ -113,7 +121,7 @@
             <div class="code-block">
 :::dc&lt;textfield id="email" required label="Email" placeholder="Enter your email" /&gt;dc:::
             </div>
-            <button class="btn" onclick="showRequiredTextFieldPopup()">Show Popup</button>
+            <button class="btn" onclick="examples.showRequiredTextField()">Show Popup</button>
         </div>
         
         <div class="example-section">
@@ -126,7 +134,7 @@
   &lt;option id="dissatisfied"&gt;Dissatisfied&lt;/option&gt;
 &lt;/radiobutton&gt;dc:::
             </div>
-            <button class="btn" onclick="showRadioButtonPopup()">Show Popup</button>
+            <button class="btn" onclick="examples.showRadioButton()">Show Popup</button>
         </div>
         
         <div class="example-section">
@@ -139,7 +147,7 @@
   &lt;option id="travel"&gt;Travel&lt;/option&gt;
 &lt;/checkbox&gt;dc:::
             </div>
-            <button class="btn" onclick="showCheckboxPopup()">Show Popup</button>
+            <button class="btn" onclick="examples.showCheckbox()">Show Popup</button>
         </div>
         
         <div class="example-section">
@@ -152,7 +160,7 @@
   &lt;option id="au"&gt;Australia&lt;/option&gt;
 &lt;/dropdown&gt;dc:::
             </div>
-            <button class="btn" onclick="showDropdownPopup()">Show Popup</button>
+            <button class="btn" onclick="examples.showDropdown()">Show Popup</button>
         </div>
         
         <div class="example-section">
@@ -160,7 +168,7 @@
             <div class="code-block">
 :::dc&lt;textarea id="feedback" label="Feedback" placeholder="Share your thoughts..." /&gt;dc:::
             </div>
-            <button class="btn" onclick="showTextAreaPopup()">Show Popup</button>
+            <button class="btn" onclick="examples.showTextArea()">Show Popup</button>
         </div>
         
         <div class="example-section">
@@ -195,316 +203,87 @@ Thank you for taking our survey. Your feedback is important to us.
 
 :::dc&lt;textarea id="comments" label="Additional Comments" placeholder="Any other thoughts?" /&gt;dc:::
             </div>
-            <button class="btn" onclick="showCompleteSurveyPopup()">Show Survey Popup</button>
-            <button class="btn btn-secondary" onclick="showBlockingSurveyPopup()">Show Blocking Survey</button>
+            <button class="btn" onclick="examples.showCompleteSurvey()">Show Survey Popup</button>
+            <button class="btn btn-secondary" onclick="examples.showBlockingSurvey()">Show Blocking Survey</button>
         </div>
         
-        <div id="responseOutput" class="response-output">
-            <h3>Popup Response:</h3>
-            <div id="responseContent" class="response-content"></div>
+        <div class="example-section">
+            <h2 class="example-title">Conditional Visibility Example</h2>
+            <div class="code-block">
+# Conditional Visibility Example
+
+:::dc&lt;radiobutton id="public_role" required label="Do you or your family members currently hold a position in Public Administration or hold functions within Public Institutions?"&gt;
+  &lt;option id="SI"&gt;YES&lt;/option&gt;
+  &lt;option id="NO"&gt;NO&lt;/option&gt;
+&lt;/radiobutton&gt;dc:::
+
+## Conditional Fields (Visible when "YES" is selected above)
+
+:::dc&lt;textfield id="role_details" label="Degree of kinship/affinity:" placeholder="" depends-on="public_role" when-value="SI" required /&gt;dc:::
+
+:::dc&lt;dropdown id="relationship_type" label="Type of relationship:" depends-on="public_role" when-value="SI" required&gt;
+  &lt;option id="family"&gt;Degree of kinship/affinity&lt;/option&gt;
+  &lt;option id="public_admin"&gt;Public Administration and/or Public Institution&lt;/option&gt;
+&lt;/dropdown&gt;dc:::
+
+:::dc&lt;textfield id="institution_name" label="Public Administration and/or Public Institution:" placeholder="" depends-on="public_role" when-value="SI" /&gt;dc:::
+            </div>
+            <button class="btn btn-success" onclick="examples.showConditionalVisibility()">Show Conditional Visibility Popup</button>
+        </div>
+        
+        <div class="example-section">
+            <h2 class="example-title">Conditional Required Example</h2>
+            <div class="code-block">
+# Conditional Required Example
+
+:::dc&lt;radiobutton id="additional_info_needed" required label="Do you have additional information to provide?"&gt;
+  &lt;option id="SI"&gt;YES&lt;/option&gt;
+  &lt;option id="NO"&gt;NO&lt;/option&gt;
+&lt;/radiobutton&gt;dc:::
+
+## Conditional Required Field
+
+:::dc&lt;textfield id="additional_info" label="Additional Information:" placeholder="Provide further details" depends-on="additional_info_needed" required-when-value="SI" /&gt;dc:::
+            </div>
+            <button class="btn btn-success" onclick="examples.showConditionalRequired()">Show Conditional Required Popup</button>
+        </div>
+        
+        <div class="example-section">
+            <h2 class="example-title">Complete Conditional Logic Example</h2>
+            <div class="code-block">
+# PROCEDURA PER LA GESTIONE DEGLI EVENTI "FRIENDS & FAMILY"
+
+:::dc&lt;radiobutton id="public_role" required label="Ruolo pubblico:"&gt;
+  &lt;option id="SI"&gt;SI&lt;/option&gt;
+  &lt;option id="NO"&gt;NO&lt;/option&gt;
+&lt;/radiobutton&gt;dc:::
+
+## Esempio 1: Campo con visibilità condizionale
+
+:::dc&lt;textfield id="role_details" label="Grado di parentela/affinità:" placeholder="" depends-on="public_role" when-value="SI" required /&gt;dc:::
+
+:::dc&lt;dropdown id="relationship_type" label="Tipologia di relazione:" depends-on="public_role" when-value="SI" required&gt;
+  &lt;option id="family"&gt;Grado di parentela/affinità&lt;/option&gt;
+  &lt;option id="public_admin"&gt;Pubblica Amministrazione e/o Istituzione Pubblica&lt;/option&gt;
+&lt;/dropdown&gt;dc:::
+
+:::dc&lt;textfield id="institution_name" label="Pubblica Amministrazione e/o Istituzione Pubblica:" placeholder="" depends-on="public_role" when-value="SI" /&gt;dc:::
+
+## Esempio 2: Campo con obbligatorietà condizionale
+
+:::dc&lt;radiobutton id="additional_info_needed" required label="Hai informazioni aggiuntive da fornire?"&gt;
+  &lt;option id="SI"&gt;SI&lt;/option&gt;
+  &lt;option id="NO"&gt;NO&lt;/option&gt;
+&lt;/radiobutton&gt;dc:::
+
+:::dc&lt;textfield id="additional_info" label="Informazioni aggiuntive:" placeholder="Fornisci ulteriori dettagli" depends-on="additional_info_needed" required-when-value="SI" /&gt;dc:::
+            </div>
+            <button class="btn btn-success" onclick="examples.showCompleteConditionalLogic()">Show Complete Conditional Logic Popup</button>
         </div>
     </div>
 
-    <!-- Include the DynamicPopup library -->
+    <!-- Include the JavaScript files -->
     <script src="dynamicPopup.js"></script>
-    
-    <script>
-        // Function to display popup response
-        function displayResponse(response) {
-            const responseOutput = document.getElementById('responseOutput');
-            const responseContent = document.getElementById('responseContent');
-            
-            responseContent.textContent = JSON.stringify(response, null, 2);
-            responseOutput.style.display = 'block';
-            
-            // Scroll to response
-            responseOutput.scrollIntoView({ behavior: 'smooth' });
-        }
-        
-        // Simple text field popup
-        function showSimpleTextFieldPopup() {
-            const config = {
-                id: 'simple_text_field',
-                title: 'Simple Text Field',
-                markdownContent: `
-# Simple Text Field
-
-This is a simple text field example.
-
-:::dc<textfield id="name" label="Your Name" placeholder="Enter your name" />dc:::
-                `,
-                isBlocking: false
-            };
-            
-            const popup = new DynamicPopup(
-                config,
-                (response) => {
-                    console.log('Popup completed:', response);
-                    displayResponse(response);
-                    return Promise.resolve();
-                },
-                () => {
-                    console.log('Popup dismissed');
-                }
-            );
-            
-            popup.render();
-        }
-        
-        // Required text field popup
-        function showRequiredTextFieldPopup() {
-            const config = {
-                id: 'required_text_field',
-                title: 'Required Text Field',
-                markdownContent: `
-# Required Text Field
-
-This field is required and must be filled.
-
-:::dc<textfield id="email" required label="Email" placeholder="Enter your email" />dc:::
-                `,
-                isBlocking: false
-            };
-            
-            const popup = new DynamicPopup(
-                config,
-                (response) => {
-                    console.log('Popup completed:', response);
-                    displayResponse(response);
-                    return Promise.resolve();
-                },
-                () => {
-                    console.log('Popup dismissed');
-                }
-            );
-            
-            popup.render();
-        }
-        
-        // Radio button popup
-        function showRadioButtonPopup() {
-            const config = {
-                id: 'radio_button',
-                title: 'Radio Button Example',
-                markdownContent: `
-# Radio Button Example
-
-Please select your satisfaction level.
-
-:::dc<radiobutton id="satisfaction" required label="Satisfaction">
-  <option id="very_satisfied">Very Satisfied</option>
-  <option id="satisfied">Satisfied</option>
-  <option id="neutral">Neutral</option>
-  <option id="dissatisfied">Dissatisfied</option>
-</radiobutton>dc:::
-                `,
-                isBlocking: false
-            };
-            
-            const popup = new DynamicPopup(
-                config,
-                (response) => {
-                    console.log('Popup completed:', response);
-                    displayResponse(response);
-                    return Promise.resolve();
-                },
-                () => {
-                    console.log('Popup dismissed');
-                }
-            );
-            
-            popup.render();
-        }
-        
-        // Checkbox popup
-        function showCheckboxPopup() {
-            const config = {
-                id: 'checkbox',
-                title: 'Checkbox Example',
-                markdownContent: `
-# Checkbox Example
-
-Select your interests.
-
-:::dc<checkbox id="interests" label="Interests">
-  <option id="tech">Technology</option>
-  <option id="sports">Sports</option>
-  <option id="music">Music</option>
-  <option id="travel">Travel</option>
-</checkbox>dc:::
-                `,
-                isBlocking: false
-            };
-            
-            const popup = new DynamicPopup(
-                config,
-                (response) => {
-                    console.log('Popup completed:', response);
-                    displayResponse(response);
-                    return Promise.resolve();
-                },
-                () => {
-                    console.log('Popup dismissed');
-                }
-            );
-            
-            popup.render();
-        }
-        
-        // Dropdown popup
-        function showDropdownPopup() {
-            const config = {
-                id: 'dropdown',
-                title: 'Dropdown Example',
-                markdownContent: `
-# Dropdown Example
-
-Please select your country.
-
-:::dc<dropdown id="country" required label="Country">
-  <option id="us">United States</option>
-  <option id="ca">Canada</option>
-  <option id="uk">United Kingdom</option>
-  <option id="au">Australia</option>
-</dropdown>dc:::
-                `,
-                isBlocking: false
-            };
-            
-            const popup = new DynamicPopup(
-                config,
-                (response) => {
-                    console.log('Popup completed:', response);
-                    displayResponse(response);
-                    return Promise.resolve();
-                },
-                () => {
-                    console.log('Popup dismissed');
-                }
-            );
-            
-            popup.render();
-        }
-        
-        // Text area popup
-        function showTextAreaPopup() {
-            const config = {
-                id: 'text_area',
-                title: 'Text Area Example',
-                markdownContent: `
-# Text Area Example
-
-Please share your feedback.
-
-:::dc<textarea id="feedback" label="Feedback" placeholder="Share your thoughts..." />dc:::
-                `,
-                isBlocking: false
-            };
-            
-            const popup = new DynamicPopup(
-                config,
-                (response) => {
-                    console.log('Popup completed:', response);
-                    displayResponse(response);
-                    return Promise.resolve();
-                },
-                () => {
-                    console.log('Popup dismissed');
-                }
-            );
-            
-            popup.render();
-        }
-        
-        // Complete survey popup
-        function showCompleteSurveyPopup() {
-            const config = {
-                id: 'complete_survey',
-                title: 'Customer Survey',
-                markdownContent: `
-# Customer Survey
-
-Thank you for taking our survey. Your feedback is important to us.
-
-:::dc<textfield id="name" required label="Full Name" placeholder="Enter your name" />dc:::
-
-:::dc<dropdown id="age" required label="Age Group">
-  <option id="18-25">18-25</option>
-  <option id="26-35">26-35</option>
-  <option id="36-45">36-45</option>
-  <option id="46+">46+</option>
-</dropdown>dc:::
-
-:::dc<radiobutton id="satisfaction" required label="How satisfied are you?">
-  <option id="very_satisfied">Very Satisfied</option>
-  <option id="satisfied">Satisfied</option>
-  <option id="neutral">Neutral</option>
-  <option id="dissatisfied">Dissatisfied</option>
-</radiobutton>dc:::
-
-:::dc<checkbox id="interests" label="Interests">
-  <option id="tech">Technology</option>
-  <option id="sports">Sports</option>
-  <option id="music">Music</option>
-  <option id="travel">Travel</option>
-</checkbox>dc:::
-
-:::dc<textarea id="comments" label="Additional Comments" placeholder="Any other thoughts?" />dc:::
-                `,
-                isBlocking: false
-            };
-            
-            const popup = new DynamicPopup(
-                config,
-                (response) => {
-                    console.log('Popup completed:', response);
-                    displayResponse(response);
-                    return Promise.resolve();
-                },
-                () => {
-                    console.log('Popup dismissed');
-                }
-            );
-            
-            popup.render();
-        }
-        
-        // Blocking survey popup
-        function showBlockingSurveyPopup() {
-            const config = {
-                id: 'blocking_survey',
-                title: 'Mandatory Survey',
-                markdownContent: `
-# Mandatory Survey
-
-This is a mandatory survey that must be completed.
-
-:::dc<textfield id="name" required label="Full Name" placeholder="Enter your name" />dc:::
-
-:::dc<radiobutton id="satisfaction" required label="How satisfied are you?">
-  <option id="very_satisfied">Very Satisfied</option>
-  <option id="satisfied">Satisfied</option>
-  <option id="neutral">Neutral</option>
-  <option id="dissatisfied">Dissatisfied</option>
-</radiobutton>dc:::
-                `,
-                isBlocking: true
-            };
-            
-            const popup = new DynamicPopup(
-                config,
-                (response) => {
-                    console.log('Popup completed:', response);
-                    displayResponse(response);
-                    return Promise.resolve();
-                },
-                () => {
-                    console.log('Popup dismissed');
-                }
-            );
-            
-            popup.render();
-        }
-    </script>
+    <script src="testData.js"></script>
 </body>
 </html>

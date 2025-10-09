@@ -11,6 +11,9 @@ This is a pure JavaScript implementation of the Dynamic Popup component that wor
 - Smooth animations and transitions
 - No external dependencies
 - Works completely client-side
+- **Conditional Logic Support**: Show/hide components based on other field values
+- **Conditional Required Status**: Make fields required based on other field values
+- **Dynamic Required Indicators**: Asterisk indicators update dynamically based on conditional logic
 
 ## Component Types
 
@@ -43,6 +46,38 @@ This is a pure JavaScript implementation of the Dynamic Popup component that wor
      <option id="au">Australia</option>
    </dropdown>dc:::
    ```
+
+## Conditional Logic
+
+The component supports two types of conditional logic:
+
+### 1. Conditional Visibility
+Show or hide components based on the value of another field:
+
+```markdown
+:::dc<radiobutton id="public_role" required label="Do you hold a public position?">
+  <option id="SI">YES</option>
+  <option id="NO">NO</option>
+</radiobutton>dc:::
+
+:::dc<textfield id="role_details" label="Role details:" depends-on="public_role" when-value="SI" required />dc:::
+```
+
+In this example, the `role_details` text field will only be visible when "YES" is selected in the `public_role` radio button.
+
+### 2. Conditional Required Status
+Make fields required based on the value of another field:
+
+```markdown
+:::dc<radiobutton id="additional_info_needed" required label="Do you have additional information?">
+  <option id="SI">YES</option>
+  <option id="NO">NO</option>
+</radiobutton>dc:::
+
+:::dc<textfield id="additional_info" label="Additional Information:" depends-on="additional_info_needed" required-when-value="SI" />dc:::
+```
+
+In this example, the `additional_info` text field is always visible but becomes required only when "YES" is selected in the `additional_info_needed` radio button.
 
 ## Usage
 

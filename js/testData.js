@@ -165,6 +165,107 @@ This is a mandatory survey that must be completed.
   showOnce: true
 };
 
+// Conditional logic popup configuration - Visibility Example
+const conditionalVisibilityConfig = {
+  id: 'conditional_visibility',
+  title: 'Conditional Visibility Example',
+  markdownContent: `
+# Conditional Visibility Example
+
+This example demonstrates how fields can be shown or hidden based on other field values.
+
+:::dc<radiobutton id="public_role" required label="Do you or your family members currently hold a position in Public Administration or hold functions within Public Institutions?">
+  <option id="SI">YES</option>
+  <option id="NO">NO</option>
+</radiobutton>dc:::
+
+## Conditional Fields (Visible when "YES" is selected above)
+
+The following fields are visible only if you select "YES" in the question above:
+
+:::dc<textfield id="role_details" label="Degree of kinship/affinity:" placeholder="" depends-on="public_role" when-value="SI" required />dc:::
+
+:::dc<dropdown id="relationship_type" label="Type of relationship:" depends-on="public_role" when-value="SI" required>
+  <option id="family">Degree of kinship/affinity</option>
+  <option id="public_admin">Public Administration and/or Public Institution</option>
+</dropdown>dc:::
+
+:::dc<textfield id="institution_name" label="Public Administration and/or Public Institution:" placeholder="" depends-on="public_role" when-value="SI" />dc:::
+  `,
+  isBlocking: true,
+  showOnce: false
+};
+
+// Conditional logic popup configuration - Required Example
+const conditionalRequiredConfig = {
+  id: 'conditional_required',
+  title: 'Conditional Required Example',
+  markdownContent: `
+# Conditional Required Example
+
+This example demonstrates how fields can become required based on other field values.
+
+:::dc<radiobutton id="additional_info_needed" required label="Do you have additional information to provide?">
+  <option id="SI">YES</option>
+  <option id="NO">NO</option>
+</radiobutton>dc:::
+
+## Conditional Required Field
+
+The following field is always visible, but becomes required only if you select "YES" in the question above:
+
+:::dc<textfield id="additional_info" label="Additional Information:" placeholder="Provide further details" depends-on="additional_info_needed" required-when-value="SI" />dc:::
+  `,
+  isBlocking: true,
+  showOnce: false
+};
+
+// Complete conditional logic example
+const completeConditionalLogicConfig = {
+  id: 'complete_conditional_logic',
+  title: 'Complete Conditional Logic Example',
+  markdownContent: `
+# PROCEDURA PER LA GESTIONE DEGLI EVENTI "FRIENDS & FAMILY"
+
+Nel quadro del modello di Modello di Organizzazione, Gestione e Controllo adottato dalla nostra Società ai sensi del D.lgs. 231/2001, pubblichiamo questa procedura.
+
+## Informazioni Personali
+
+Lei o i suoi familiari ha / hanno attualmente un incarico nella Pubblica Amministrazione o ricopre / ricoprono attualmente funzioni all'interno di Istituzioni Pubbliche?
+
+:::dc<radiobutton id="public_role" required label="Ruolo pubblico:">
+  <option id="SI">SI</option>
+  <option id="NO">NO</option>
+</radiobutton>dc:::
+
+## Esempio 1: Campo con visibilità condizionale
+
+I seguenti campi sono visibili solo se si seleziona "SI" nella domanda sopra:
+
+:::dc<textfield id="role_details" label="Grado di parentela/affinità:" placeholder="" depends-on="public_role" when-value="SI" required />dc:::
+
+:::dc<dropdown id="relationship_type" label="Tipologia di relazione:" depends-on="public_role" when-value="SI" required>
+  <option id="family">Grado di parentela/affinità</option>
+  <option id="public_admin">Pubblica Amministrazione e/o Istituzione Pubblica</option>
+</dropdown>dc:::
+
+:::dc<textfield id="institution_name" label="Pubblica Amministrazione e/o Istituzione Pubblica:" placeholder="" depends-on="public_role" when-value="SI" />dc:::
+
+## Esempio 2: Campo con obbligatorietà condizionale
+
+Il seguente campo è sempre visibile, ma diventa obbligatorio solo se si seleziona "SI" nella domanda qui sotto:
+
+:::dc<radiobutton id="additional_info_needed" required label="Hai informazioni aggiuntive da fornire?">
+  <option id="SI">SI</option>
+  <option id="NO">NO</option>
+</radiobutton>dc:::
+
+:::dc<textfield id="additional_info" label="Informazioni aggiuntive:" placeholder="Fornisci ulteriori dettagli" depends-on="additional_info_needed" required-when-value="SI" />dc:::
+  `,
+  isBlocking: true,
+  showOnce: false
+};
+
 // Example of how to use the configurations
 function showPopupWithConfig(config) {
   const popup = new DynamicPopup(
@@ -172,11 +273,13 @@ function showPopupWithConfig(config) {
     (response) => {
       console.log('Popup completed with response:', response);
       // Handle the response here (e.g., send to server)
+      alert('Form submitted successfully! Check the console for details.');
       return Promise.resolve();
     },
     () => {
       console.log('Popup was dismissed');
       // Handle dismissal here
+      alert('Popup was dismissed');
     }
   );
   
@@ -192,7 +295,10 @@ window.popupConfigs = {
   dropdown: dropdownConfig,
   textArea: textAreaConfig,
   completeSurvey: completeSurveyConfig,
-  blockingSurvey: blockingSurveyConfig
+  blockingSurvey: blockingSurveyConfig,
+  conditionalVisibility: conditionalVisibilityConfig,
+  conditionalRequired: conditionalRequiredConfig,
+  completeConditionalLogic: completeConditionalLogicConfig
 };
 
 // Example usage functions
@@ -204,5 +310,8 @@ window.examples = {
   showDropdown: () => showPopupWithConfig(dropdownConfig),
   showTextArea: () => showPopupWithConfig(textAreaConfig),
   showCompleteSurvey: () => showPopupWithConfig(completeSurveyConfig),
-  showBlockingSurvey: () => showPopupWithConfig(blockingSurveyConfig)
+  showBlockingSurvey: () => showPopupWithConfig(blockingSurveyConfig),
+  showConditionalVisibility: () => showPopupWithConfig(conditionalVisibilityConfig),
+  showConditionalRequired: () => showPopupWithConfig(conditionalRequiredConfig),
+  showCompleteConditionalLogic: () => showPopupWithConfig(completeConditionalLogicConfig)
 };
