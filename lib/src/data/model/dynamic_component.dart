@@ -209,13 +209,19 @@ class DynamicComponent {
         requiredWhenValue = attributeMap['required-when-value'];
       }
       
+      // Parse required-when-visible attribute (this is a boolean flag)
+      bool? requiredWhenVisible;
+      if (attributeMap.containsKey('required-when-visible')) {
+        requiredWhenVisible = attributeMap['required-when-visible']?.toLowerCase() == 'true';
+      }
+      
       // Create conditional logic
       conditionalLogic = ConditionalLogic(
         dependsOn: attributeMap['depends-on']!,
         condition: attributeMap['condition'] ?? 'equals',
         value: visibilityValue, // Use visibility value for visibility checks
         disableWhenHidden: attributeMap['disable-when-hidden'] != 'false',
-        requiredWhenVisible: null, // Not used anymore
+        requiredWhenVisible: requiredWhenVisible, // Parse the boolean value
         requiredWhenValue: requiredWhenValue, // The value that makes the field required
       );
       

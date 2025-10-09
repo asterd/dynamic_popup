@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dynamic_popup/src/parser/markdown_dynamic_parser.dart';
-import 'package:dynamic_popup/src/data/model/dynamic_component.dart';
 
 void main() {
   group('Required When Value Tests', () {
@@ -16,7 +15,7 @@ void main() {
       expect(component.conditionalLogic, isNotNull);
       expect(component.conditionalLogic!.dependsOn, 'controller');
       expect(component.conditionalLogic!.value, 'YES');
-      expect(component.conditionalLogic!.requiredWhenValue, true);
+      expect(component.conditionalLogic!.requiredWhenValue, 'true');
     });
     
     test('Parse component with required-when-value set to false', () {
@@ -31,7 +30,7 @@ void main() {
       expect(component.conditionalLogic, isNotNull);
       expect(component.conditionalLogic!.dependsOn, 'controller');
       expect(component.conditionalLogic!.value, 'YES');
-      expect(component.conditionalLogic!.requiredWhenValue, false);
+      expect(component.conditionalLogic!.requiredWhenValue, 'false');
     });
   });
 }

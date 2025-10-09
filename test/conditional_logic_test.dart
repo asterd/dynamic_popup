@@ -1,8 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dynamic_popup/src/parser/markdown_dynamic_parser.dart';
-import 'package:dynamic_popup/src/data/model/dynamic_component.dart';
-import 'package:dynamic_popup/src/ui/dynamic_popup_widget.dart';
-import 'package:flutter/material.dart';
 
 void main() {
   group('Conditional Logic Tests', () {

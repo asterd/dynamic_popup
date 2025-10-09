@@ -5,7 +5,6 @@ class MarkdownDynamicParser {
   // Updated pattern to support new syntax with improved initiator
   // This pattern now supports multiline syntax with spaces and newlines
   static const String _componentPattern = r':::dc\s*<([a-zA-Z]+)([^>]*?)(\/?)?>';
-  static const String _conditionalPattern = r'<conditional\s+if="([^"]+)">';
   static const String _optionPattern = r'<option(?:\s+id="([^"]*)")?>([^<]+)<\/option>';
   
   /// Parse markdown content with extraction of dynamic components
@@ -58,7 +57,8 @@ class MarkdownDynamicParser {
             // Find the matching closing tag with dc::: suffix (allowing for whitespace)
             final searchStart = candidate.endPosition;
             final remainder = markdownContent.substring(searchStart);
-            final closeRegex = RegExp('</$tagType>\s*dc:::', multiLine: true);
+            // Updated regex to handle multiline format with possible whitespace
+            final closeRegex = RegExp('</$tagType>\\s*dc:::', multiLine: true);
             final closeMatch = closeRegex.firstMatch(remainder);
             
             if (closeMatch != null) {
@@ -83,7 +83,8 @@ class MarkdownDynamicParser {
           } else {
             // For self-closing components, we need to account for the dc::: suffix with possible whitespace
             // Check if the component ends with dc::: allowing for whitespace
-            final fullComponentPattern = RegExp('${RegExp.escape(fullMatch)}\s*dc:::', multiLine: true);
+            final escapedFullMatch = RegExp.escape(fullMatch);
+            final fullComponentPattern = RegExp('$escapedFullMatch\\s*dc:::', multiLine: true);
             final fullMatchResult = fullComponentPattern.firstMatch(markdownContent.substring(position));
             if (fullMatchResult != null) {
               componentEndPos = position + fullMatchResult.end;
@@ -98,6 +99,7 @@ class MarkdownDynamicParser {
           contentFlow.add(ContentElement.component(component));
           lastEnd = position;
         } catch (e) {
+          print('Error parsing component: $e');
           // Log error but continue parsing
           // Move past this component
           position = candidate.endPosition;

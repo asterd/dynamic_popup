@@ -25,7 +25,7 @@ class _DynamicRadioButtonState extends State<DynamicRadioButton> {
   @override
   void initState() {
     super.initState();
-    selectedValue = widget.initialValue?.toString() ?? widget.component.defaultValue;
+    selectedValue = widget.initialValue?.toString();
   }
 
   @override
@@ -44,7 +44,7 @@ class _DynamicRadioButtonState extends State<DynamicRadioButton> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Label with dynamic required indicator
+          // Label
           RichText(
             text: TextSpan(
               children: [
@@ -76,7 +76,7 @@ class _DynamicRadioButtonState extends State<DynamicRadioButton> {
               children: widget.component.optionData!.map((optionData) {
                 // Use ID if available, otherwise use text
                 final optionValue = optionData.id ?? optionData.text;
-                return RadioListTile<String>(
+                return RadioListTile<String>.adaptive(
                   title: Text(
                     optionData.text,
                     style: TextStyle(
@@ -85,8 +85,10 @@ class _DynamicRadioButtonState extends State<DynamicRadioButton> {
                     ),
                   ),
                   value: optionValue,
+                  // ignore: deprecated_member_use
                   groupValue: selectedValue,
                   activeColor: widget.hasError ? Colors.red : Theme.of(context).primaryColor,
+                  // ignore: deprecated_member_use
                   onChanged: (String? value) {
                     setState(() {
                       selectedValue = value;
@@ -101,7 +103,7 @@ class _DynamicRadioButtonState extends State<DynamicRadioButton> {
           else if (widget.component.options != null)
             Column(
               children: widget.component.options!.map((option) {
-                return RadioListTile<String>(
+                return RadioListTile<String>.adaptive(
                   title: Text(
                     option,
                     style: TextStyle(
@@ -110,8 +112,10 @@ class _DynamicRadioButtonState extends State<DynamicRadioButton> {
                     ),
                   ),
                   value: option,
+                  // ignore: deprecated_member_use
                   groupValue: selectedValue,
                   activeColor: widget.hasError ? Colors.red : Theme.of(context).primaryColor,
+                  // ignore: deprecated_member_use
                   onChanged: (String? value) {
                     setState(() {
                       selectedValue = value;
